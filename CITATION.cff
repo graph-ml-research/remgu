@@ -1,1 +1,16 @@
-
+cff-version: 1.2.0
+message: "If you use remgu in your research, please cite it as below."
+authors:
+  - family-names: Maslennikov
+    given-names: Mstislav
+    orcid: "https://orcid.org/0009-0002-2263-762X" 
+title: "remgu: Research Experiment Lifecycle and Knowledge Infrastructure"
+version: 0.1.0
+date-released: 2026-10-04
+license: Apache-2.0
+repository-code: "https://github.com/graph-ml-research/remgu"
+keywords:
+  - machine learning
+  - research management
+  - experiment tracking
+  - reproducible research
