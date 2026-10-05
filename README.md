@@ -1,5 +1,6 @@
-# ReMgu
+# Research consistency check
 
-Research infrastructure for ML experiments: hypotheses, runs, results, and knowledge
+This page is retained as a compatibility pointer. The maintained, bilingual documentation is here:
 
-Originally developed to support research work of students at the Open Information Technologies Laboratory, Faculty of Computational Mathematics and Cybernetics, Lomonosov Moscow State University. It is maintained as an independent research software project.
+- English: [Consistency check](en/consistency-check.md)
+- Русский: [Проверка согласованности](ru/consistency-check.md)

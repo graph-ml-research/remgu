@@ -18,7 +18,7 @@ The core owns execution state and run persistence. The research layer owns cross
 ## Current command
 
 ```bash
-research check
+src check
 ```
 
 `research check` is read-only. It reports:
