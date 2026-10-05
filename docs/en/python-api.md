@@ -1,4 +1,4 @@
-# Python API: use REMgu from a training script
+# Python API: use ReMgu from a training script
 
 [English](../../README.md) | [Русский](../ru/python-api.md)
 
@@ -31,7 +31,7 @@ with experiment.run() as run:
         run.log_metric("ndcg_at_20", ndcg_at_20, step=epoch)
 ```
 
-`train_and_evaluate` is application code, not a REMgu function. The example shows where to place the instrumentation.
+`train_and_evaluate` is application code, not a ReMgu function. The example shows where to place the instrumentation.
 
 ### Create a run directly through the API
 
@@ -126,7 +126,7 @@ The result contains each selected `example_id` once. Its `selection.reasons` lis
 
 ## Resolve example IDs with ExampleProvider
 
-`ExampleProvider` is a `Protocol` for application-specific data access. Implement `get(example_id)` to load the source example or lightweight context, and `describe(example_id)` to return a human-readable description. REMgu does not prescribe a dataset, database, or storage engine.
+`ExampleProvider` is a `Protocol` for application-specific data access. Implement `get(example_id)` to load the source example or lightweight context, and `describe(example_id)` to return a human-readable description. ReMgu does not prescribe a dataset, database, or storage engine.
 
 ```python
 from typing import Any

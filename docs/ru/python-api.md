@@ -1,4 +1,4 @@
-# Python API: использование REMgu в коде обучения
+# Python API: использование ReMgu в коде обучения
 
 [English](../en/python-api.md) | [Русский](../../README.ru.md)
 
@@ -31,7 +31,7 @@ with experiment.run() as run:
         run.log_metric("ndcg_at_20", ndcg_at_20, step=epoch)
 ```
 
-`train_and_evaluate` — функция вашего проекта, а не функция REMgu. Пример показывает, куда добавить инструментирование.
+`train_and_evaluate` — функция вашего проекта, а не функция ReMgu. Пример показывает, куда добавить инструментирование.
 
 ### Создание запуска напрямую через API
 
@@ -126,7 +126,7 @@ for row in selectors.records():
 
 ## Получение данных по ID через ExampleProvider
 
-`ExampleProvider` — `Protocol` для доступа к данным конкретного проекта. Реализуйте `get(example_id)` для загрузки исходного примера или облегчённого контекста и `describe(example_id)` для человекочитаемого описания. REMgu не навязывает датасет, базу данных или способ хранения.
+`ExampleProvider` — `Protocol` для доступа к данным конкретного проекта. Реализуйте `get(example_id)` для загрузки исходного примера или облегчённого контекста и `describe(example_id)` для человекочитаемого описания. ReMgu не навязывает датасет, базу данных или способ хранения.
 
 ```python
 from typing import Any

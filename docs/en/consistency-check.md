@@ -59,4 +59,4 @@ for issue in report.issues:
 
 ## Interpreting the result
 
-A clean consistency report does not prove that a hypothesis is scientifically sound or that a metric is statistically significant. It only checks the structural and workflow-level rules implemented by REMgu. Scientific interpretation remains the responsibility of the researcher.
+A clean consistency report does not prove that a hypothesis is scientifically sound or that a metric is statistically significant. It only checks the structural and workflow-level rules implemented by ReMgu. Scientific interpretation remains the responsibility of the researcher.

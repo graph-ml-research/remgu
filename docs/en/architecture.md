@@ -2,7 +2,7 @@
 
 [English](../../README.md) | [Русский](../ru/architecture.md)
 
-## What REMgu owns
+## What ReMgu owns
 
 ```text
 research question
@@ -19,7 +19,7 @@ research question
  conclusion + next step
 ```
 
-REMgu provides a small persistence and lifecycle layer around an existing Python experiment. It does not own model training, data loading, metric calculation, hyperparameter search, scheduling, or a remote tracking service.
+ReMgu provides a small persistence and lifecycle layer around an existing Python experiment. It does not own model training, data loading, metric calculation, hyperparameter search, scheduling, or a remote tracking service.
 
 ## Main components
 
@@ -34,13 +34,13 @@ REMgu provides a small persistence and lifecycle layer around an existing Python
 
 ## Architectural boundaries
 
-**Experiment code → REMgu.** The project owns training, evaluation, datasets, and domain-specific metrics. REMgu records the hypothesis, configuration snapshot, metric stream, and selected diagnostic examples.
+**Experiment code → ReMgu.** The project owns training, evaluation, datasets, and domain-specific metrics. ReMgu records the hypothesis, configuration snapshot, metric stream, and selected diagnostic examples.
 
-**REMgu → filesystem.** The current implementation stores ordinary YAML, CSV, JSONL, and a small text pointer. It does not require a database or server.
+**ReMgu → filesystem.** The current implementation stores ordinary YAML, CSV, JSONL, and a small text pointer. It does not require a database or server.
 
 **Consistency check → stored files.** The checker reads raw records so it can report malformed entries. It does not mutate them or attempt automatic repair.
 
-**Future knowledge/agent layers → REMgu.** A future knowledge base or agent may create hypotheses and inspect results, but should not be coupled into this core lifecycle. Those layers are not implemented in the current version.
+**Future knowledge/agent layers → ReMgu.** A future knowledge base or agent may create hypotheses and inspect results, but should not be coupled into this core lifecycle. Those layers are not implemented in the current version.
 
 ## Why execution and review are separate
 
@@ -50,7 +50,7 @@ A process can exit successfully without supporting the hypothesis. Therefore `ex
 
 - Storage is local and file-based; concurrent writers and distributed execution are not coordinated.
 - The active pointer supports one active run per research directory.
-- REMgu does not calculate metrics or validate their scientific meaning.
+- ReMgu does not calculate metrics or validate their scientific meaning.
 - `samples.jsonl` is not a dataset store and does not resolve IDs by itself.
 - Consistency checking reports structural/workflow issues but does not repair them.
 - Publication, knowledge-base management, agent orchestration, and site generation are future directions, not current features.

@@ -4,7 +4,7 @@
 
 **Experiment lifecycle management for reproducible ML research.**
 
-REMgu connects a research hypothesis to a concrete run, its metrics and diagnostic examples, and a written conclusion with the next step. It stores this record as ordinary files in `.research/`, so the history can be inspected, versioned, and reviewed without a tracking server.
+ReMgu connects a research hypothesis to a concrete run, its metrics and diagnostic examples, and a written conclusion with the next step. It stores this record as ordinary files in `.research/`, so the history can be inspected, versioned, and reviewed without a tracking server.
 
 > **Current scope:** run lifecycle, parameters, metrics, diagnostic samples, and read-only consistency checks. Knowledge-base management, agent workflows, report/site generation, and `research update` are not implemented in this version.
 
@@ -18,7 +18,7 @@ REMgu connects a research hypothesis to a concrete run, its metrics and diagnost
 | Review a completed run and record the conclusion | CLI | [CLI workflow](docs/en/cli.md#2-review-a-completed-run) |
 | Inspect previous runs and the active run | CLI | [CLI workflow](docs/en/cli.md#3-inspect-run-history) |
 | Find incomplete or inconsistent research records | CLI / API | [Consistency check](docs/en/consistency-check.md) |
-| Understand the files REMgu creates | Reference | [On-disk format](docs/en/data-format.md) |
+| Understand the files ReMgu creates | Reference | [On-disk format](docs/en/data-format.md) |
 
 ## The research loop
 
@@ -115,7 +115,7 @@ See the [API guide](docs/en/python-api.md) for signatures and complete examples.
 ## Design principles
 
 - **Research context stays with the run.** A run stores its hypothesis and motivation, not just a metric dump.
-- **Ordinary training scripts stay ordinary.** REMgu wraps the code you already run; it does not require a new training framework.
+- **Ordinary training scripts stay ordinary.** ReMgu wraps the code you already run; it does not require a new training framework.
 - **Files are the source of truth.** YAML, CSV, and JSONL are human-readable and easy to version or inspect.
 - **Execution and review are separate.** A successful process is not the same thing as a scientifically reviewed result.
 - **Checks are read-only.** `research check` reports problems without repairing or rewriting run records.
@@ -131,7 +131,7 @@ See the [API guide](docs/en/python-api.md) for signatures and complete examples.
 
 ## Development status
 
-REMgu is an evolving research tool. The current implementation is intentionally file-based and small. The documentation describes the implementation in this repository; future knowledge management, publication, and agent features are explicitly out of scope until implemented.
+ReMgu is an evolving research tool. The current implementation is intentionally file-based and small. The documentation describes the implementation in this repository; future knowledge management, publication, and agent features are explicitly out of scope until implemented.
 
 ## Attribution and license
 

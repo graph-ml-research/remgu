@@ -76,7 +76,7 @@ If a run is still `running` but the active pointer is missing, restore it:
 python -m research.cli resume run-002
 ```
 
-Only a run with execution status `running` can be resumed. `resume` does not restart Python training or restore a process; it restores REMgu's active-run pointer so a subsequent `Experiment.run()` can reopen the persisted run.
+Only a run with execution status `running` can be resumed. `resume` does not restart Python training or restore a process; it restores ReMgu's active-run pointer so a subsequent `Experiment.run()` can reopen the persisted run.
 
 ## 5. Check research records
 

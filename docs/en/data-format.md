@@ -2,7 +2,7 @@
 
 [English](../../README.md) | [Русский](../ru/data-format.md)
 
-By default, REMgu writes to `.research/` relative to the current working directory:
+By default, ReMgu writes to `.research/` relative to the current working directory:
 
 ```text
 .research/
@@ -57,4 +57,4 @@ The `active` file contains one run ID, such as `run-003`. IDs are allocated by i
 
 ## Version control
 
-These are ordinary text files and can be committed alongside the experiment code. Decide separately whether large or sensitive diagnostic fields should be committed; REMgu does not anonymize or filter collected records automatically. Do not store credentials, personal data, or full private datasets in the research directory without an explicit data-handling policy.
+These are ordinary text files and can be committed alongside the experiment code. Decide separately whether large or sensitive diagnostic fields should be committed; ReMgu does not anonymize or filter collected records automatically. Do not store credentials, personal data, or full private datasets in the research directory without an explicit data-handling policy.
