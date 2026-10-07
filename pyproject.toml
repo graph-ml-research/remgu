@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "remgu"
+version = "0.1.0"
+description = "Experiment lifecycle management for reproducible ML research"
+readme = { file = "README.md", content-type = "text/markdown" }
+requires-python = ">=3.10"
+license = "Apache-2.0"
+authors = [
+  { name = "Mstislav Maslennikov", email = "17181470+mmaslennikov@users.noreply.github.com" },
+]
+maintainers = [
+  { name = "Mstislav Maslennikov", email = "17181470+mmaslennikov@users.noreply.github.com" },
+]
+keywords = ["machine-learning", "research", "experiments", "reproducibility", "ml-research"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = ["PyYAML>=6.0"]
+
+[project.urls]
+Homepage = "https://github.com/graph-ml-research/remgu"
+Repository = "https://github.com/graph-ml-research/remgu"
+Issues = "https://github.com/graph-ml-research/remgu/issues"
+Documentation = "https://github.com/graph-ml-research/remgu#readme"
+
+[project.scripts]
+research = "remgu.research_cli:main"
+
+[dependency-groups]
+dev = [
+  "build>=1.2",
+  "pytest>=8.0",
+  "twine>=6.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
