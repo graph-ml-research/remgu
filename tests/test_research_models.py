@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
-"""Tests for the research value objects."""
+"""Tests for the src value objects."""
 from __future__ import annotations
 
 import unittest
 from datetime import datetime, timezone
 
-from research import Execution, Motivation, ResearchMetadata, Review
+from remgu.models.execution import Execution
+from remgu.models.motivation import Motivation
+from remgu.models import ResearchMetadata
+from remgu.models import Review
 
 
 class TestResearchModels(unittest.TestCase):
-    """Verify the small immutable/mutable research state models."""
+    """Verify the small immutable/mutable src state models."""
 
     def test_motivation_defaults_reference_to_none(self) -> None:
         """A new motivation has no reference by default."""

@@ -9,7 +9,8 @@ from typing import Any
 
 import yaml
 
-from research import FileStorage, ResearchChecker
+from remgu.file_storage import FileStorage
+from remgu.consistency.research_checker import ResearchChecker
 
 
 class TestResearchChecker(unittest.TestCase):
@@ -18,7 +19,7 @@ class TestResearchChecker(unittest.TestCase):
     def setUp(self) -> None:
         """Create an isolated storage directory."""
         self._temporary_directory = tempfile.TemporaryDirectory()
-        self.base = Path(self._temporary_directory.name) / ".research"
+        self.base = Path(self._temporary_directory.name) / ".src"
         self.storage = FileStorage(self.base)
 
     def tearDown(self) -> None:
@@ -48,7 +49,7 @@ class TestResearchChecker(unittest.TestCase):
             conclusion: Optional review conclusion.
             next_step: Optional review next step.
         """
-        return {"run_id": "run-001", "research": {"hypothesis": hypothesis,
+        return {"run_id": "run-001", "src": {"hypothesis": hypothesis,
                 "motivation": motivation or {"type": "new", "reference": None}},
                 "execution": {"status": status},
                 "review": {"status": "reviewed" if conclusion else "needs_review",

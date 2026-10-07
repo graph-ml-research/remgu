@@ -8,25 +8,26 @@ from pathlib import Path
 
 import yaml
 
-from research import Experiment, Motivation
-from research.research_cli import main
+from remgu.experiment import Experiment
+from remgu.models.motivation import Motivation
+from remgu.research_cli import main
 
 
 class TestExperiment(unittest.TestCase):
-    """Verify creation, continuation and validation of research runs."""
+    """Verify creation, continuation and validation of src runs."""
 
     def setUp(self) -> None:
-        """Create an isolated temporary research directory for the test."""
+        """Create an isolated temporary src directory for the test."""
         self._temporary_directory = tempfile.TemporaryDirectory()
-        self.base_path = Path(self._temporary_directory.name) / ".research"
+        self.base_path = Path(self._temporary_directory.name) / ".src"
 
     def tearDown(self) -> None:
-        """Remove the isolated research directory after the test."""
+        """Remove the isolated src directory after the test."""
         self._temporary_directory.cleanup()
 
     def test_custom_base_path(self) -> None:
         """Persist a run under a caller-selected storage directory."""
-        base = Path(self._temporary_directory.name) / "research-data"
+        base = Path(self._temporary_directory.name) / "src-data"
         experiment = Experiment("graph-mamba", base)
         with experiment.run("H1", Motivation(type="literature_citation", reference="paper-123")):
             pass
@@ -49,7 +50,7 @@ class TestExperiment(unittest.TestCase):
 
     def test_run_without_arguments_requires_active_run(self) -> None:
         """Reject continuation when there is no active CLI-created run."""
-        with self.assertRaisesRegex(RuntimeError, "research new"):
+        with self.assertRaisesRegex(RuntimeError, "src new"):
             Experiment("graph-mamba", self.base_path).run()
 
     def test_run_without_arguments_does_not_create_second_run(self) -> None:
@@ -57,7 +58,7 @@ class TestExperiment(unittest.TestCase):
         experiment = Experiment("graph-mamba", self.base_path)
         with experiment.run("H1", Motivation(type="new")) as first:
             self.assertEqual(first.run_id, "run-001")
-        with self.assertRaisesRegex(RuntimeError, "research new"):
+        with self.assertRaisesRegex(RuntimeError, "src new"):
             experiment.run()
         self.assertFalse((self.base_path / "runs" / "run-002").exists())
 

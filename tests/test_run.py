@@ -10,20 +10,21 @@ from unittest.mock import MagicMock
 
 import yaml
 
-from research import ExampleProvider, Experiment, Motivation
+from remgu.example.example_provider import ExampleProvider
+from remgu.experiment import Experiment
 
 
 class TestRun(unittest.TestCase):
     """Verify run lifecycle, persistence and artifact logging."""
 
     def setUp(self) -> None:
-        """Create an isolated temporary research directory."""
+        """Create an isolated temporary src directory."""
         self._temporary_directory = tempfile.TemporaryDirectory()
-        self.base_path = Path(self._temporary_directory.name) / ".research"
+        self.base_path = Path(self._temporary_directory.name) / ".src"
         self.experiment = Experiment("graph-mamba", self.base_path)
 
     def tearDown(self) -> None:
-        """Remove the temporary research directory."""
+        """Remove the temporary src directory."""
         self._temporary_directory.cleanup()
 
     def make_experiment(self) -> Experiment:
@@ -40,12 +41,12 @@ class TestRun(unittest.TestCase):
         return yaml.safe_load(path.read_text(encoding="utf-8"))
 
     def test_create_run_and_persist_yaml(self) -> None:
-        """Persist initial research, execution and review metadata."""
+        """Persist initial src, execution and review metadata."""
         run = self.experiment.run("Увеличение hidden_dim до 512 улучшит NDCG@20.", {"type": "new"})
         data = self.read_run()
         self.assertEqual(data["run_id"], "run-001")
-        self.assertEqual(data["research"]["hypothesis"], "Увеличение hidden_dim до 512 улучшит NDCG@20.")
-        self.assertEqual(data["research"]["motivation"], {"type": "new", "reference": None})
+        self.assertEqual(data["src"]["hypothesis"], "Увеличение hidden_dim до 512 улучшит NDCG@20.")
+        self.assertEqual(data["src"]["motivation"], {"type": "new", "reference": None})
         self.assertEqual(data["execution"]["status"], "running")
         self.assertIsNotNone(data["execution"]["started_at"])
         self.assertIsNone(data["execution"]["finished_at"])
@@ -99,10 +100,10 @@ class TestRun(unittest.TestCase):
         """Allow a new motivation without a reference."""
         with self.experiment.run("H", {"type": "new"}):
             pass
-        self.assertIsNone(self.read_run()["research"]["motivation"]["reference"])
+        self.assertIsNone(self.read_run()["src"]["motivation"]["reference"])
 
     def test_log_params(self) -> None:
-        """Write research parameters to params.yaml."""
+        """Write src parameters to params.yaml."""
         with self.experiment.run("H1", {"type": "new"}) as run:
             run.log_params({"hidden_dim": 512, "batch_size": 64})
         self.assertEqual(yaml.safe_load((run.params_path).read_text()), {"hidden_dim": 512, "batch_size": 64})

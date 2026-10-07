@@ -5,7 +5,7 @@ from __future__ import annotations
 import unittest
 from typing import Any
 
-from research import ExampleProvider
+from remgu.example.example_provider import ExampleProvider
 
 
 class FakeProvider(ExampleProvider):

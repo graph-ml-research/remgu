@@ -11,7 +11,7 @@ from typing import Any
 
 import yaml
 
-from research.research_cli import main
+from remgu.research_cli import main
 
 
 class TestResearchCli(unittest.TestCase):
@@ -20,7 +20,7 @@ class TestResearchCli(unittest.TestCase):
     def setUp(self) -> None:
         """Create an isolated CLI storage directory."""
         self._temporary_directory = tempfile.TemporaryDirectory()
-        self.base = Path(self._temporary_directory.name) / ".research"
+        self.base = Path(self._temporary_directory.name) / ".src"
 
     def tearDown(self) -> None:
         """Remove the isolated CLI storage directory."""
@@ -146,6 +146,6 @@ class TestResearchCli(unittest.TestCase):
         self.assertTrue(lines[1].startswith("run-003 |"))
 
     def test_previous_when_no_runs(self) -> None:
-        """Report an empty research store clearly."""
+        """Report an empty src store clearly."""
         _, output = self.run_cli("previous")
         self.assertEqual(output.strip(), "runs: none")

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from research import TopKSelector
+from remgu.example import TopKSelector
 
 
 class TestTopKSelector(unittest.TestCase):
