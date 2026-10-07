@@ -9,7 +9,7 @@
 ## Запуск
 
 ```bash
-python -m research.cli check
+research check
 ```
 
 Проверка читает все найденные `runs/<run-id>/run.yaml`, включая записи со статусами `running`, `failed` и `aborted`. Она сообщает:
@@ -42,11 +42,11 @@ issues:
 ## Использование из Python
 
 ```python
-from research.consistency import check_consistency
-from research.storage import FileStorage
+from remgu.consistency import ResearchChecker
+from remgu.file_storage import FileStorage
 
-storage = FileStorage(".research")
-report = check_consistency(storage)
+checker = ResearchChecker(FileStorage(".research"))
+report = checker.check()
 
 print(report.ok)
 print(report.completed_runs)

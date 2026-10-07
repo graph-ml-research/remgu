@@ -9,13 +9,13 @@ The API is deliberately thin: keep your existing training loop and use `Experime
 Create the run in the CLI first:
 
 ```bash
-python -m research.cli new --hypothesis "hidden_dim=512 improves NDCG@20" --motivation-type new
+research new --hypothesis "hidden_dim=512 improves NDCG@20" --motivation-type new
 ```
 
 Then use the active run in your training script:
 
 ```python
-from research import Experiment
+from remgu import Experiment
 
 experiment = Experiment("graph-mamba")
 with experiment.run() as run:
@@ -38,7 +38,7 @@ with experiment.run() as run:
 Use this when run creation should be controlled by Python rather than the CLI:
 
 ```python
-from research import Experiment, Motivation
+from remgu import Experiment, Motivation
 
 experiment = Experiment("graph-mamba", base_path=".research")
 with experiment.run(
@@ -88,7 +88,7 @@ Each call appends one JSON object to `samples.jsonl`. Store compact references a
 `TopKSelector` keeps at most `k` records, avoiding the need to retain the entire validation set in memory.
 
 ```python
-from research import TopKSelector
+from remgu import TopKSelector
 
 largest_regressions = TopKSelector(
     k=20,
@@ -108,7 +108,7 @@ The `key` callable calculates the selection score. By default the largest scores
 ## Combine multiple criteria with ExampleSelector
 
 ```python
-from research import ExampleSelector, TopKSelector
+from remgu import ExampleSelector, TopKSelector
 
 selectors = ExampleSelector([
     TopKSelector(k=10, key=lambda row: row["score"], largest=False, name="lowest_score"),
@@ -131,7 +131,7 @@ The result contains each selected `example_id` once. Its `selection.reasons` lis
 ```python
 from typing import Any
 
-from research import ExampleProvider
+from remgu import ExampleProvider
 
 class MyExampleProvider:
     def get(self, example_id: str) -> Any:
@@ -160,7 +160,7 @@ with experiment.run() as run:
 ## Public API summary
 
 ```python
-from research import (
+from remgu import (
     Experiment,
     Motivation,
     Run,

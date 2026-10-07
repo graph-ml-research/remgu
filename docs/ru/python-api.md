@@ -9,13 +9,13 @@ API намеренно тонкий: существующий training loop ос
 Сначала создайте запуск через CLI:
 
 ```bash
-python -m research.cli new --hypothesis "hidden_dim=512 improves NDCG@20" --motivation-type new
+research new --hypothesis "hidden_dim=512 improves NDCG@20" --motivation-type new
 ```
 
 Затем используйте активный запуск в скрипте обучения:
 
 ```python
-from research import Experiment
+from remgu import Experiment
 
 experiment = Experiment("graph-mamba")
 with experiment.run() as run:
@@ -38,7 +38,7 @@ with experiment.run() as run:
 Используйте этот вариант, если запуском должен управлять Python, а не CLI:
 
 ```python
-from research import Experiment, Motivation
+from remgu import Experiment, Motivation
 
 experiment = Experiment("graph-mamba", base_path=".research")
 with experiment.run(
@@ -88,7 +88,7 @@ run.collect({
 `TopKSelector` хранит не более `k` записей, поэтому не требуется держать в памяти весь validation set.
 
 ```python
-from research import TopKSelector
+from remgu import TopKSelector
 
 largest_regressions = TopKSelector(
     k=20,
@@ -108,7 +108,7 @@ for row in largest_regressions.records():
 ## Объединение критериев через ExampleSelector
 
 ```python
-from research import ExampleSelector, TopKSelector
+from remgu import ExampleSelector, TopKSelector
 
 selectors = ExampleSelector([
     TopKSelector(k=10, key=lambda row: row["score"], largest=False, name="lowest_score"),
@@ -131,7 +131,7 @@ for row in selectors.records():
 ```python
 from typing import Any
 
-from research import ExampleProvider
+from remgu import ExampleProvider
 
 class MyExampleProvider:
     def get(self, example_id: str) -> Any:
@@ -160,7 +160,7 @@ with experiment.run() as run:
 ## Сводка публичного API
 
 ```python
-from research import (
+from remgu import (
     Experiment,
     Motivation,
     Run,

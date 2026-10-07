@@ -9,7 +9,7 @@ Research records tend to become incomplete when experiments fail, a review is po
 ## Run it
 
 ```bash
-python -m research.cli check
+research check
 ```
 
 The checker reads every `runs/<run-id>/run.yaml` it can find, including records for `running`, `failed`, and `aborted` executions. It reports:
@@ -42,13 +42,12 @@ The checker reads raw YAML instead of constructing `Run` objects, so malformed m
 ## Python usage
 
 ```python
-from research.consistency import check_consistency
-from research.storage import FileStorage
+from remgu.consistency import ResearchChecker
+from remgu.file_storage import FileStorage
 
-storage = FileStorage(".research")
-report = check_consistency(storage)
+checker = ResearchChecker(FileStorage(".research"))
+report = checker.check()
 
-print(report.ok)
 print(report.completed_runs)
 print(report.runs_with_hypotheses)
 for issue in report.issues:

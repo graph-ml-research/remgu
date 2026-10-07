@@ -2,7 +2,7 @@
 
 **English** | [Русский](README.ru.md)
 
-**Experiment lifecycle management for reproducible ML research.**
+Experiment lifecycle management for reproducible ML research.
 
 ReMgu connects a research hypothesis to a concrete run, its metrics and diagnostic examples, and a written conclusion with the next step. It stores this record as ordinary files in `.research/`, so the history can be inspected, versioned, and reviewed without a tracking server.
 
@@ -41,13 +41,48 @@ question / observation
 
 A **run** is one concrete execution. The hypothesis and motivation explain why it exists; execution metadata records what happened; review metadata records what was learned and what should happen next.
 
+
+## Installation
+
+ReMgu requires Python 3.10 or newer.
+
+### Option 1: Use ReMgu in your project code
+If you want to import ReMgu in your training code (`from remgu import Experiment`), install the package into your project environment:
+
+```bash
+pip install remgu
+```
+
+The `research` command will then be available while you are inside that environment:
+
+```bash
+research --help
+```
+
+### Option 2: Use only the research command line
+
+If you need ReMgu only as the `research` command (without importing it in code), install it via [pipx](https://pipx.pypa.io):
+
+```bash
+pipx install remgu
+```
+
+Pipx creates a dedicated environment for `remgu` and adds the `research` command to `PATH`.
+The command will be available from any directory, without activating any environment.
+
+```bash
+research --help
+```
+
+Upgrade: `pipx upgrade remgu`.
+
+
 ## Quick start
 
 From a checkout of this repository, install the dependency and create a run:
 
 ```bash
-python -m pip install pyyaml
-python -m research.cli new \
+research new \
   --hypothesis "Increasing hidden_dim to 512 improves NDCG@20" \
   --motivation-type previous_run \
   --reference run-001
@@ -58,7 +93,7 @@ The command prints the new run ID. It creates `.research/` in the current direct
 In your training script:
 
 ```python
-from research import Experiment, Motivation
+from remgu import Experiment, Motivation
 
 experiment = Experiment("graph-mamba")
 with experiment.run() as run:
@@ -74,25 +109,25 @@ The no-argument `experiment.run()` resumes the active run created by the CLI. Ex
 After validating the result, review it:
 
 ```bash
-python -m research.cli finish run-002 \
+research finish run-001 \
   --conclusion "NDCG@20 increased from 0.401 to 0.428 on the fixed validation set" \
   --next-step "Repeat with three random seeds"
 ```
 
-Use the actual ID printed by `research new`; `run-002` is only an example. Full walkthroughs: [CLI](docs/en/cli.md) · [Python API](docs/en/python-api.md).
+Use the actual ID printed by `research new`; `run-001` is only an example. Full walkthroughs: [CLI](docs/en/cli.md) · [Python API](docs/en/python-api.md).
 
 ## Interfaces
 
 ### Command line
 
 ```bash
-python -m research.cli --help
-python -m research.cli new --help
-python -m research.cli status
-python -m research.cli previous --limit 10
-python -m research.cli resume run-001
-python -m research.cli finish run-001 --conclusion "..." --next-step "..."
-python -m research.cli check
+research --help
+research new --help
+research status
+research previous --limit 10
+research resume run-001
+research finish run-001 --conclusion "..." --next-step "..."
+research check
 ```
 
 The CLI defaults to `.research/`. Pass `--base-path /path/to/research-data` before the subcommand to use another directory.
@@ -100,7 +135,7 @@ The CLI defaults to `.research/`. Pass `--base-path /path/to/research-data` befo
 ### Python API
 
 ```python
-from research import Experiment, Motivation, Run, ExampleProvider, TopKSelector
+from remgu import Experiment, Motivation, Run, ExampleProvider, TopKSelector
 ```
 
 - `Experiment` opens the active run or creates one programmatically.
@@ -135,7 +170,6 @@ ReMgu is an evolving research tool. The current implementation is intentionally 
 
 ## Attribution and license
 
-Copyright 2026 Mstislav Maslennikov. Developed and maintained by Mstislav Maslennikov. Licensed under [Apache License 2.0](LICENSE) when the license file is present in the repository.
-
+Copyright 2026 Mstislav Maslennikov. Developed and maintained by Mstislav Maslennikov. Licensed under [Apache License 2.0](LICENSE).
 
 Originally developed to support research work of students at the Open Information Technologies Laboratory, Faculty of Computational Mathematics and Cybernetics, Lomonosov Moscow State University. It is maintained as an independent research software project.

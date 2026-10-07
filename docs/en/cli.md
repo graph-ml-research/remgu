@@ -2,12 +2,12 @@
 
 [English](../../README.md) | [Русский](../ru/cli.md)
 
-Run commands from the repository root. In this checkout, invoke the CLI as `python -m research.cli`. The default data directory is `.research/` under the current working directory.
+Run commands from the repository root. In this checkout, invoke the CLI as `research`. The default data directory is `.research/` under the current working directory.
 
 ## 1. Create a run
 
 ```bash
-python -m research.cli new \
+research new \
   --hypothesis "Increasing hidden_dim to 512 improves NDCG@20" \
   --motivation-type previous_run \
   --reference run-001
@@ -22,7 +22,7 @@ python -m research.cli new \
 For a new research direction:
 
 ```bash
-python -m research.cli new --hypothesis "Random-walk ordering improves graph sequence quality" --motivation-type new
+research new --hypothesis "Random-walk ordering improves graph sequence quality" --motivation-type new
 ```
 
 ## 2. Review a completed run
@@ -30,7 +30,7 @@ python -m research.cli new --hypothesis "Random-walk ordering improves graph seq
 After training code exits normally, the API marks the run `completed`. Record the scientific interpretation separately:
 
 ```bash
-python -m research.cli finish run-002 \
+research finish run-001 \
   --conclusion "NDCG@20 increased from 0.401 to 0.428 on the fixed validation set" \
   --next-step "Repeat with three random seeds"
 ```
@@ -42,7 +42,7 @@ Both `--conclusion` and `--next-step` are required. Review is allowed only for a
 If the active run is the one to review, the ID can be omitted:
 
 ```bash
-python -m research.cli finish --conclusion "..." --next-step "..."
+research finish --conclusion "..." --next-step "..."
 ```
 
 ## 3. Inspect run history
@@ -50,13 +50,13 @@ python -m research.cli finish --conclusion "..." --next-step "..."
 Show the active run and both lifecycle states:
 
 ```bash
-python -m research.cli status
+research status
 ```
 
 List the latest runs (the displayed subset is ordered oldest first):
 
 ```bash
-python -m research.cli previous --limit 10
+research previous --limit 10
 ```
 
 Example output:
@@ -73,7 +73,7 @@ This is a compact summary, not a replacement for opening each run's `run.yaml` a
 If a run is still `running` but the active pointer is missing, restore it:
 
 ```bash
-python -m research.cli resume run-002
+research resume run-002
 ```
 
 Only a run with execution status `running` can be resumed. `resume` does not restart Python training or restore a process; it restores ReMgu's active-run pointer so a subsequent `Experiment.run()` can reopen the persisted run.
@@ -81,7 +81,7 @@ Only a run with execution status `running` can be resumed. `resume` does not res
 ## 5. Check research records
 
 ```bash
-python -m research.cli check
+research check
 ```
 
 The command reports counts of completed runs and runs with non-empty hypotheses, then lists consistency issues. It is read-only; see [Consistency checks](consistency-check.md).
@@ -91,8 +91,8 @@ The command reports counts of completed runs and runs with non-empty hypotheses,
 Pass `--base-path` before the subcommand:
 
 ```bash
-python -m research.cli --base-path ./research-data new --hypothesis "H1" --motivation-type new
-python -m research.cli --base-path ./research-data status
+research --base-path ./research-data new --hypothesis "H1" --motivation-type new
+research --base-path ./research-data status
 ```
 
 The directory contains `runs/` and, while a run is active, an `active` file.

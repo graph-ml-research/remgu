@@ -2,12 +2,12 @@
 
 [English](../en/cli.md) | [Русский](../../README.ru.md)
 
-Команды выполняются из корня репозитория. В текущей версии CLI запускается через `python -m research.cli`. Каталог данных по умолчанию — `.research/` в текущем рабочем каталоге.
+Команды выполняются из корня репозитория. В текущей версии CLI запускается через `research`. Каталог данных по умолчанию — `.research/` в текущем рабочем каталоге.
 
 ## 1. Создать запуск
 
 ```bash
-python -m research.cli new \
+research new \
   --hypothesis "Увеличение hidden_dim до 512 улучшит NDCG@20" \
   --motivation-type previous_run \
   --reference run-001
@@ -22,7 +22,7 @@ python -m research.cli new \
 Для нового направления:
 
 ```bash
-python -m research.cli new --hypothesis "Порядок узлов через random walk улучшает качество графовой последовательности" --motivation-type new
+research new --hypothesis "Порядок узлов через random walk улучшает качество графовой последовательности" --motivation-type new
 ```
 
 ## 2. Разобрать завершённый запуск
@@ -30,7 +30,7 @@ python -m research.cli new --hypothesis "Порядок узлов через ra
 После нормального завершения кода обучения API переводит запуск в `completed`. Научную интерпретацию нужно зафиксировать отдельно:
 
 ```bash
-python -m research.cli finish run-002 \
+research finish run-001 \
   --conclusion "NDCG@20 вырос с 0.401 до 0.428 на фиксированной validation-выборке" \
   --next-step "Повторить с тремя random seed"
 ```
@@ -42,7 +42,7 @@ python -m research.cli finish run-002 \
 Если нужный запуск активен, ID можно не указывать:
 
 ```bash
-python -m research.cli finish --conclusion "..." --next-step "..."
+research finish --conclusion "..." --next-step "..."
 ```
 
 ## 3. Посмотреть историю запусков
@@ -50,13 +50,13 @@ python -m research.cli finish --conclusion "..." --next-step "..."
 Показать активный запуск и оба состояния жизненного цикла:
 
 ```bash
-python -m research.cli status
+research status
 ```
 
 Показать последние запуски (выбранный набор выводится от старого к новому):
 
 ```bash
-python -m research.cli previous --limit 10
+research previous --limit 10
 ```
 
 Пример вывода:
@@ -73,7 +73,7 @@ run-002 | execution=completed | review=needs_review | motivation=previous_run ->
 Если запуск всё ещё имеет статус `running`, но файл активного указателя потерян, восстановите его:
 
 ```bash
-python -m research.cli resume run-002
+research resume run-002
 ```
 
 Возобновить можно только запуск со статусом `running`. Команда не перезапускает обучение и не восстанавливает процесс ОС; она восстанавливает указатель ReMgu, чтобы последующий вызов `Experiment.run()` мог открыть сохранённый запуск.
@@ -81,7 +81,7 @@ python -m research.cli resume run-002
 ## 5. Проверить исследовательские записи
 
 ```bash
-python -m research.cli check
+research check
 ```
 
 Команда выводит количество завершённых запусков и запусков с непустыми гипотезами, затем перечисляет найденные проблемы. Проверка не меняет данные; подробности — [проверка согласованности](consistency-check.md).
@@ -91,8 +91,8 @@ python -m research.cli check
 `--base-path` указывается перед подкомандой:
 
 ```bash
-python -m research.cli --base-path ./research-data new --hypothesis "H1" --motivation-type new
-python -m research.cli --base-path ./research-data status
+research --base-path ./research-data new --hypothesis "H1" --motivation-type new
+research --base-path ./research-data status
 ```
 
 В каталоге находятся `runs/` и файл `active`, пока есть активный запуск.

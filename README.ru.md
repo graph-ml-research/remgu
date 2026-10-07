@@ -2,7 +2,7 @@
 
 [English](README.md) | **Русский**
 
-**Управление жизненным циклом ML-экспериментов для воспроизводимых исследований.**
+Управление жизненным циклом ML-экспериментов для воспроизводимых исследований.
 
 ReMgu связывает исследовательскую гипотезу с конкретным запуском, его метриками и диагностическими примерами, а затем — с выводом и следующим шагом. История хранится в обычных файлах внутри `.research/`: её можно читать, версионировать и проверять без отдельного сервера трекинга.
 
@@ -41,13 +41,49 @@ ReMgu связывает исследовательскую гипотезу с 
 
 **Run** — конкретное исполнение эксперимента. Гипотеза и мотивация объясняют, зачем оно проводится; метаданные исполнения фиксируют, что произошло; review — что удалось узнать и что делать дальше.
 
-## Быстрый старт
+## Установка
 
-Из корня клонированного репозитория установите зависимость и создайте запуск:
+ReMgu требует Python 3.10 или новее.
+
+### Вариант 1: Использовать ReMgu в коде проекта
+
+Если вы хотите импортировать ReMgu в своём коде (`from remgu import Experiment`),
+установите пакет в окружение проекта:
 
 ```bash
-python -m pip install pyyaml
-python -m research.cli new \
+pip install remgu
+```
+
+После этого команда `research` будет работать, пока вы находитесь в этом окружении:
+
+```bash
+research --help
+```
+
+### Вариант 2: Использовать команду `research` во всей системе
+
+Если ReMgu нужен только как команда `research` (без импорта в коде),
+установите его через [pipx](https://pipx.pypa.io):
+
+```bash
+pipx install remgu
+```
+
+Pipx создаёт отдельное окружение для `remgu` и добавляет команду `research` в `PATH`.
+Команда будет доступна из любого каталога, без активации какого-либо окружения.
+
+```bash
+research --help
+```
+
+Обновление: `pipx upgrade remgu`.
+
+## Быстрый старт
+
+Создайте запуск перед обучением:
+
+```bash
+research new \
   --hypothesis "Увеличение hidden_dim до 512 улучшит NDCG@20" \
   --motivation-type previous_run \
   --reference run-001
@@ -58,7 +94,7 @@ python -m research.cli new \
 В коде обучения:
 
 ```python
-from research import Experiment
+from remgu import Experiment
 
 experiment = Experiment("graph-mamba")
 with experiment.run() as run:
@@ -74,25 +110,26 @@ with experiment.run() as run:
 После проверки результата зафиксируйте вывод:
 
 ```bash
-python -m research.cli finish run-002 \
+research finish run-001 \
   --conclusion "NDCG@20 вырос с 0.401 до 0.428 на фиксированной validation-выборке" \
   --next-step "Повторить с тремя random seed"
 ```
 
-Используйте фактический ID из вывода `research new`; `run-002` — иллюстрация. Подробные сценарии: [CLI](docs/ru/cli.md) · [Python API](docs/ru/python-api.md).
+Используйте фактический ID из вывода `research new`; `run-001` — иллюстрация. Подробные сценарии: [CLI](docs/ru/cli.md) · [Python API](docs/ru/python-api.md).
+
 
 ## Интерфейсы
 
 ### Командная строка
 
 ```bash
-python -m research.cli --help
-python -m research.cli new --help
-python -m research.cli status
-python -m research.cli previous --limit 10
-python -m research.cli resume run-001
-python -m research.cli finish run-001 --conclusion "..." --next-step "..."
-python -m research.cli check
+research --help
+research new --help
+research status
+research previous --limit 10
+research resume run-001
+research finish run-001 --conclusion "..." --next-step "..."
+research check
 ```
 
 CLI использует `.research/` по умолчанию. Чтобы выбрать другой каталог, перед подкомандой укажите `--base-path /path/to/research-data`.
@@ -100,7 +137,7 @@ CLI использует `.research/` по умолчанию. Чтобы выб
 ### Python API
 
 ```python
-from research import Experiment, Motivation, Run, ExampleProvider, TopKSelector
+from remgu import Experiment, Motivation, Run, ExampleProvider, TopKSelector
 ```
 
 - `Experiment` открывает активный запуск или программно создаёт новый.
@@ -135,4 +172,6 @@ ReMgu развивается как исследовательский инст�
 
 ## Авторство и лицензия
 
-Copyright 2026 Mstislav Maslennikov. Разработчик и сопровождающий — Mstislav Maslennikov. Лицензия — [Apache License 2.0](LICENSE), если файл лицензии присутствует в репозитории.
+Copyright 2026 Mstislav Maslennikov. Разработчик и сопровождающий — Мстислав Масленников. Лицензия — [Apache License 2.0](LICENSE). 
+
+Проект изначально разработан для поддержки научной работы студентов в Лаборатории открытых информационных технологий факультета вычислительной математики и кибернетики МГУ имени М. В. Ломоносова. Поддерживается как независимый исследовательский программный проект.
