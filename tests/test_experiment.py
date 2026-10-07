@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+# Copyright 2026 Mstislav Maslennikov
+# SPDX-License-Identifier: Apache-2.0
 """Tests for the Experiment facade."""
 from __future__ import annotations
 
@@ -14,15 +15,15 @@ from remgu.research_cli import main
 
 
 class TestExperiment(unittest.TestCase):
-    """Verify creation, continuation and validation of src runs."""
+    """Verify creation, continuation and validation of research runs."""
 
     def setUp(self) -> None:
-        """Create an isolated temporary src directory for the test."""
+        """Create an isolated temporary research directory for the test."""
         self._temporary_directory = tempfile.TemporaryDirectory()
-        self.base_path = Path(self._temporary_directory.name) / ".src"
+        self.base_path = Path(self._temporary_directory.name) / ".research"
 
     def tearDown(self) -> None:
-        """Remove the isolated src directory after the test."""
+        """Remove the isolated research directory after the test."""
         self._temporary_directory.cleanup()
 
     def test_custom_base_path(self) -> None:

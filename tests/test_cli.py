@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+# Copyright 2026 Mstislav Maslennikov
+# SPDX-License-Identifier: Apache-2.0
 """Tests for the ResearchCli command interface."""
 from __future__ import annotations
 
@@ -20,7 +21,7 @@ class TestResearchCli(unittest.TestCase):
     def setUp(self) -> None:
         """Create an isolated CLI storage directory."""
         self._temporary_directory = tempfile.TemporaryDirectory()
-        self.base = Path(self._temporary_directory.name) / ".src"
+        self.base = Path(self._temporary_directory.name) / ".research"
 
     def tearDown(self) -> None:
         """Remove the isolated CLI storage directory."""
@@ -146,6 +147,6 @@ class TestResearchCli(unittest.TestCase):
         self.assertTrue(lines[1].startswith("run-003 |"))
 
     def test_previous_when_no_runs(self) -> None:
-        """Report an empty src store clearly."""
+        """Report an empty research store clearly."""
         _, output = self.run_cli("previous")
         self.assertEqual(output.strip(), "runs: none")

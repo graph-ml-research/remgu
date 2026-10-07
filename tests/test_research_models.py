@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+# Copyright 2026 Mstislav Maslennikov
+# SPDX-License-Identifier: Apache-2.0
 """Tests for the src value objects."""
 from __future__ import annotations
 
@@ -12,7 +13,7 @@ from remgu.models import Review
 
 
 class TestResearchModels(unittest.TestCase):
-    """Verify the small immutable/mutable src state models."""
+    """Verify the small immutable/mutable research state models."""
 
     def test_motivation_defaults_reference_to_none(self) -> None:
         """A new motivation has no reference by default."""

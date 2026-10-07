@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+# Copyright 2026 Mstislav Maslennikov
+# SPDX-License-Identifier: Apache-2.0
 """Tests for the Run execution object."""
 from __future__ import annotations
 
@@ -18,13 +19,13 @@ class TestRun(unittest.TestCase):
     """Verify run lifecycle, persistence and artifact logging."""
 
     def setUp(self) -> None:
-        """Create an isolated temporary src directory."""
+        """Create an isolated temporary research directory."""
         self._temporary_directory = tempfile.TemporaryDirectory()
-        self.base_path = Path(self._temporary_directory.name) / ".src"
+        self.base_path = Path(self._temporary_directory.name) / ".research"
         self.experiment = Experiment("graph-mamba", self.base_path)
 
     def tearDown(self) -> None:
-        """Remove the temporary src directory."""
+        """Remove the temporary research directory."""
         self._temporary_directory.cleanup()
 
     def make_experiment(self) -> Experiment:
@@ -45,8 +46,8 @@ class TestRun(unittest.TestCase):
         run = self.experiment.run("Увеличение hidden_dim до 512 улучшит NDCG@20.", {"type": "new"})
         data = self.read_run()
         self.assertEqual(data["run_id"], "run-001")
-        self.assertEqual(data["src"]["hypothesis"], "Увеличение hidden_dim до 512 улучшит NDCG@20.")
-        self.assertEqual(data["src"]["motivation"], {"type": "new", "reference": None})
+        self.assertEqual(data["research"]["hypothesis"], "Увеличение hidden_dim до 512 улучшит NDCG@20.")
+        self.assertEqual(data["research"]["motivation"], {"type": "new", "reference": None})
         self.assertEqual(data["execution"]["status"], "running")
         self.assertIsNotNone(data["execution"]["started_at"])
         self.assertIsNone(data["execution"]["finished_at"])
@@ -100,7 +101,7 @@ class TestRun(unittest.TestCase):
         """Allow a new motivation without a reference."""
         with self.experiment.run("H", {"type": "new"}):
             pass
-        self.assertIsNone(self.read_run()["src"]["motivation"]["reference"])
+        self.assertIsNone(self.read_run()["research"]["motivation"]["reference"])
 
     def test_log_params(self) -> None:
         """Write src parameters to params.yaml."""

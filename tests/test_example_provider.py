@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+# Copyright 2026 Mstislav Maslennikov
+# SPDX-License-Identifier: Apache-2.0
 """Tests for the ExampleProvider interface contract."""
 from __future__ import annotations
 

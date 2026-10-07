@@ -1,4 +1,5 @@
-# -*- coding: utf8 -*-
+# Copyright 2026 Mstislav Maslennikov
+# SPDX-License-Identifier: Apache-2.0
 from pathlib import Path
 
 import pytest
@@ -7,7 +8,6 @@ from remgu.experiment import Experiment
 from remgu.example import TopKSelector
 from remgu.example.example_selector import ExampleSelector
 
-__author__ = 'Mstislav Maslennikov'
 
 
 def test_multi_selector_merges_reasons_without_duplicate_examples():
@@ -32,7 +32,7 @@ def test_multi_selector_merges_reasons_without_duplicate_examples():
 
 
 def test_selected_records_can_be_written_to_run(tmp_path: Path):
-    experiment = Experiment("graph-mamba", tmp_path / ".src")
+    experiment = Experiment("graph-mamba", tmp_path / ".research")
     selector = TopKSelector(k=2, key=lambda r: r["error"])
     selector.consider({"example_id": "a", "error": 0.1})
     selector.consider({"example_id": "b", "error": 0.9})

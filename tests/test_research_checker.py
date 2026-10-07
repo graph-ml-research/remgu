@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+# Copyright 2026 Mstislav Maslennikov
+# SPDX-License-Identifier: Apache-2.0
 """Tests for ResearchChecker and its report models."""
 from __future__ import annotations
 
@@ -19,7 +20,7 @@ class TestResearchChecker(unittest.TestCase):
     def setUp(self) -> None:
         """Create an isolated storage directory."""
         self._temporary_directory = tempfile.TemporaryDirectory()
-        self.base = Path(self._temporary_directory.name) / ".src"
+        self.base = Path(self._temporary_directory.name) / ".research"
         self.storage = FileStorage(self.base)
 
     def tearDown(self) -> None:
@@ -49,7 +50,7 @@ class TestResearchChecker(unittest.TestCase):
             conclusion: Optional review conclusion.
             next_step: Optional review next step.
         """
-        return {"run_id": "run-001", "src": {"hypothesis": hypothesis,
+        return {"run_id": "run-001", "research": {"hypothesis": hypothesis,
                 "motivation": motivation or {"type": "new", "reference": None}},
                 "execution": {"status": status},
                 "review": {"status": "reviewed" if conclusion else "needs_review",
