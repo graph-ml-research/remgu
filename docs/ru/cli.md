@@ -86,7 +86,33 @@ research check
 
 Команда выводит количество завершённых запусков и запусков с непустыми гипотезами, затем перечисляет найденные проблемы. Проверка не меняет данные; подробности — [проверка согласованности](consistency-check.md).
 
-## 6. Хранить данные в другом каталоге
+## 6. Построить research snapshot
+
+```bash
+research update
+```
+
+Команда строит `ResearchSnapshot` в памяти, выполняет consistency analysis и выводит сводную статистику. Исходные `.research/` не изменяются. Подробности — [Research Snapshot](research-snapshot.md).
+
+## 7. Создать research archive
+
+```bash
+research archive
+research archive --output ./reports/research-archive.zip
+```
+
+Команда публикует самодостаточный ZIP с README, кратким отчётом, metadata и существующими артефактами runs. Исходные датасеты не копируются; существующий файл не перезаписывается. Подробности — [Research archive](archive.md).
+
+## 8. Экспортировать Markdown-отчёт
+
+```bash
+research export markdown
+research export markdown --output ./reports/research.md
+```
+
+Команда строит `ResearchSnapshot` и формирует самостоятельный `research.md` с историей запусков, relations, метриками, compact samples, consistency findings и уже записанными выводами. Она не изменяет `.research/`, не запускает ML и не вызывает LLM. Существующий файл не перезаписывается. Подробности — [экспорт в Markdown](markdown-export.md).
+
+## 9. Хранить данные в другом каталоге
 
 `--base-path` указывается перед подкомандой:
 
@@ -105,3 +131,13 @@ research --base-path ./research-data status
 - Через API запуск также можно явно завершить со статусом `aborted`.
 - `research finish` фиксирует научный разбор, а не завершает исполнение.
 - `research check` не редактирует записи запусков.
+
+
+## 10. Экспорт статического сайта
+
+```bash
+research export site
+research export site --output ./reports/site
+```
+
+Команда строит `ResearchSnapshot` и генерирует статический HTML-сайт: `index.html`, отдельную страницу каждого запуска в `runs/`, каталог примеров в `examples/` и общий `style.css`. Backend, JavaScript-фреймворк и JavaScript не требуются. Каталог назначения не должен существовать заранее. Сайт можно открыть локально или позднее разместить на статическом хостинге; deployment в ReMgu не входит. См. [Экспорт статического сайта](static-site.md).

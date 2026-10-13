@@ -171,3 +171,40 @@ from remgu import (
 ```
 
 Эти символы экспортируются пакетом. Низкоуровневый `FileStorage` и типы отчёта о согласованности можно импортировать из соответствующих модулей, но они не входят в верхнеуровневый публичный API.
+
+
+## Read-only анализ исследования
+
+Важные классы research-слоя экспортируются непосредственно из `remgu`:
+
+```python
+from remgu import ResearchChecker, ResearchSnapshotBuilder
+
+report = ResearchChecker(".research").check()
+snapshot = ResearchSnapshotBuilder(".research").build()
+```
+
+`FileStorage` здесь является внутренней деталью реализации; пользовательскому коду студентов не нужно создавать его вручную только ради проверки согласованности.
+
+## Markdown publication adapter
+
+```python
+from remgu import MarkdownAdapter, ResearchSnapshotBuilder
+
+snapshot = ResearchSnapshotBuilder(".research").build()
+report_path = MarkdownAdapter().export(snapshot, "research.md")
+```
+
+`MarkdownAdapter` только отображает snapshot в памяти. Он не читает research store, не изменяет runs, не запускает ML и не придумывает выводы. Существующие файлы не перезаписываются.
+
+
+## Публикация статического сайта
+
+```python
+from remgu import ResearchSnapshotBuilder, StaticSiteAdapter
+
+snapshot = ResearchSnapshotBuilder(".research").build()
+site_path = StaticSiteAdapter().export(snapshot, "site")
+```
+
+`StaticSiteAdapter` принимает только `ResearchSnapshot`; он не читает `.research` и не обращается к объектам `Run`. Генерируется статический сайт без JavaScript и backend. Уже существующий каталог назначения не перезаписывается.

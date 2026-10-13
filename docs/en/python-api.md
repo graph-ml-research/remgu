@@ -171,3 +171,40 @@ from remgu import (
 ```
 
 The current package exports these symbols. The low-level `FileStorage` and consistency-report types can be imported from their modules, but are not part of the package's top-level public exports.
+
+
+## Read-only research analysis
+
+Important research-layer classes are exported directly from `remgu`:
+
+```python
+from remgu import ResearchChecker, ResearchSnapshotBuilder
+
+report = ResearchChecker(".research").check()
+snapshot = ResearchSnapshotBuilder(".research").build()
+```
+
+`FileStorage` is an implementation detail here; student-facing code should not need to construct it just to run consistency checks.
+
+## Markdown publication adapter
+
+```python
+from remgu import MarkdownAdapter, ResearchSnapshotBuilder
+
+snapshot = ResearchSnapshotBuilder(".research").build()
+report_path = MarkdownAdapter().export(snapshot, "research.md")
+```
+
+`MarkdownAdapter` only renders the in-memory snapshot. It does not read the research store, modify runs, execute ML, or infer conclusions. Existing output files are not overwritten.
+
+
+## Static site publication
+
+```python
+from remgu import ResearchSnapshotBuilder, StaticSiteAdapter
+
+snapshot = ResearchSnapshotBuilder(".research").build()
+site_path = StaticSiteAdapter().export(snapshot, "site")
+```
+
+`StaticSiteAdapter` accepts only a `ResearchSnapshot`; it never reads `.research` or accesses `Run` objects. It writes a static site without JavaScript or a backend and refuses to overwrite an existing destination directory.

@@ -86,7 +86,34 @@ research check
 
 The command reports counts of completed runs and runs with non-empty hypotheses, then lists consistency issues. It is read-only; see [Consistency checks](consistency-check.md).
 
-## 6. Store data elsewhere
+
+## 6. Build a research snapshot
+
+```bash
+research update
+```
+
+`research update` rebuilds the in-memory `ResearchSnapshot`, runs consistency analysis, and prints execution/review counts and findings. It does not modify `.research/`. See [Research Snapshot](research-snapshot.md).
+
+## 7. Create a research archive
+
+```bash
+research archive
+research archive --output ./reports/research-archive.zip
+```
+
+The command publishes a self-contained ZIP containing a README, compact report, research metadata, existing run artifacts, and compact diagnostic examples. Original datasets are not copied. Existing output files are rejected rather than overwritten. See [Research archive](archive.md).
+
+## 8. Export a Markdown report
+
+```bash
+research export markdown
+research export markdown --output ./reports/research.md
+```
+
+The command builds a `ResearchSnapshot` and renders a standalone `research.md` document with run history, relations, metrics, compact samples, consistency findings, and recorded conclusions. It does not modify `.research/`, run ML, or call an LLM. Existing output files are rejected rather than overwritten. See [Markdown export](markdown-export.md).
+
+## 9. Store data elsewhere
 
 Pass `--base-path` before the subcommand:
 
@@ -105,3 +132,13 @@ The directory contains `runs/` and, while a run is active, an `active` file.
 - A run may also be explicitly marked `aborted` via the API.
 - `research finish` records a review; it does not finish execution.
 - `research check` never edits run data.
+
+
+## 10. Export a static site
+
+```bash
+research export site
+research export site --output ./reports/site
+```
+
+The command builds a `ResearchSnapshot` and generates a static HTML site with `index.html`, one page per run under `runs/`, an examples catalogue under `examples/`, and a shared `style.css`. It uses no backend, framework, or JavaScript. The destination directory must not already exist. The output can be opened locally or hosted later on a static hosting service; deployment is not part of ReMgu. See [Static site export](static-site.md).

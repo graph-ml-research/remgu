@@ -28,6 +28,31 @@ ReMgu добавляет небольшой слой хранения и упр�
 - `Motivation`, `ResearchMetadata`, `Execution`, `Review` — структурированные части записи запуска.
 - `FileStorage` — хранение метаданных и указателя активного запуска в файловой системе.
 - `TopKSelector` / `ExampleSelector` — отбор диагностических примеров с ограниченным использованием памяти.
+- `ResearchSnapshotBuilder` — строит производный snapshot в памяти из сохранённых research data.
+- `ResearchChecker` — read-only consistency analysis, используемый при построении snapshot.
+- `ArchiveAdapter` — публикует snapshot и известные исходные артефакты в самодостаточный ZIP.
+- `MarkdownAdapter` — отображает snapshot в самостоятельный Markdown-отчёт.
+- `StaticSiteAdapter` — отображает snapshot в статический HTML-сайт.
+
+### Граница publication layer
+
+```text
+.research/  (source of truth)
+     │
+     ▼
+ResearchSnapshotBuilder
+     │
+     ▼
+ResearchSnapshot  (только память)
+     │
+     ├── ArchiveAdapter
+     ├── MarkdownAdapter
+     ├── StaticSiteAdapter
+     └── будущие publication adapters
+```
+
+Snapshot не сохраняется и не заменяет файлы запусков. Publication adapters используют его и могут публиковать только те данные, которые ReMgu уже умеет понимать.
+
 - `ExampleProvider` — протокол для получения исходного примера по его ID средствами конкретного проекта.
 - `check_consistency` — read-only проверка сохранённых исследовательских записей.
 - `research.cli` — CLI над теми же файловыми данными.

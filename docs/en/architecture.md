@@ -28,6 +28,31 @@ ReMgu provides a small persistence and lifecycle layer around an existing Python
 - `Motivation`, `ResearchMetadata`, `Execution`, `Review` — structured parts of the run record.
 - `FileStorage` — filesystem persistence for run metadata and the active pointer.
 - `TopKSelector` / `ExampleSelector` — bounded-memory selection of diagnostic examples.
+- `ResearchSnapshotBuilder` — derives an in-memory publication/analysis snapshot from persisted research data.
+- `ResearchChecker` — read-only consistency analysis used by the snapshot builder.
+- `ArchiveAdapter` — publishes a snapshot and known source artifacts as a self-contained ZIP.
+- `MarkdownAdapter` — renders the snapshot as a standalone Markdown report.
+- `StaticSiteAdapter` — renders the snapshot as a static HTML site.
+
+### Publication boundary
+
+```text
+.research/  (source of truth)
+     │
+     ▼
+ResearchSnapshotBuilder
+     │
+     ▼
+ResearchSnapshot  (memory only)
+     │
+     ├── ArchiveAdapter
+     ├── MarkdownAdapter
+     ├── StaticSiteAdapter
+     └── future publication adapters
+```
+
+The snapshot is not persisted and does not replace the run files. Publication adapters consume it and may copy only data that ReMgu already understands.
+
 - `ExampleProvider` — protocol for application-specific resolution of example IDs.
 - `check_consistency` — read-only validation of persisted research records.
 - `research.cli` — command-line interface over the same file-based state.

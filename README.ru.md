@@ -6,7 +6,7 @@
 
 ReMgu связывает исследовательскую гипотезу с конкретным запуском, его метриками и диагностическими примерами, а затем — с выводом и следующим шагом. История хранится в обычных файлах внутри `.research/`: её можно читать, версионировать и проверять без отдельного сервера трекинга.
 
-> **Текущие возможности:** жизненный цикл запусков, параметры, метрики, диагностические примеры и read-only проверка согласованности. База знаний, агентные сценарии, генерация отчётов/сайта и команда `research update` в этой версии не реализованы.
+> **Текущие возможности:** жизненный цикл запусков, параметры, метрики, диагностические примеры и read-only проверка согласованности. База знаний и агентные сценарии в этой версии не реализованы. Snapshot, ZIP-архивы, Markdown-отчёты и статические сайты доступны через `research update`, `research archive`, `research export markdown` и `research export site`.
 
 ## С чего начать
 
@@ -18,6 +18,9 @@ ReMgu связывает исследовательскую гипотезу с 
 | Зафиксировать вывод по завершённому запуску | CLI | [Сценарий CLI](docs/ru/cli.md#2-разобрать-завершённый-запуск) |
 | Посмотреть историю и активный запуск | CLI | [Сценарий CLI](docs/ru/cli.md#3-посмотреть-историю-запусков) |
 | Найти неполные или противоречивые записи | CLI / API | [Проверка согласованности](docs/ru/consistency-check.md) |
+| Построить производный research snapshot | CLI / API | [Research Snapshot](docs/ru/research-snapshot.md) |
+| Создать самодостаточный ZIP для руководителя | CLI | [Research archive](docs/ru/archive.md) |
+| Опубликовать статический HTML-сайт | CLI | [Экспорт статического сайта](docs/ru/static-site.md) |
 | Разобраться в структуре файлов | Справочник | [Формат данных](docs/ru/data-format.md) |
 
 ## Исследовательский цикл
@@ -130,6 +133,10 @@ research previous --limit 10
 research resume run-001
 research finish run-001 --conclusion "..." --next-step "..."
 research check
+research update
+research archive
+research export markdown
+research export site
 ```
 
 CLI использует `.research/` по умолчанию. Чтобы выбрать другой каталог, перед подкомандой укажите `--base-path /path/to/research-data`.
@@ -155,13 +162,17 @@ from remgu import Experiment, Motivation, Run, ExampleProvider, TopKSelector
 - **Обычный training script остаётся обычным.** ReMgu оборачивает существующий код, а не требует перехода на новый фреймворк обучения.
 - **Источник истины — файлы.** YAML, CSV и JSONL можно читать, проверять и версионировать.
 - **Исполнение и научный разбор разделены.** Успешный процесс ещё не означает, что результат осмыслен и проверен.
-- **Проверки ничего не исправляют автоматически.** `research check` только сообщает о проблемах и не переписывает данные запусков.
+- **Исследовательский анализ не изменяет данные.** `research check`, `research update`, `research archive`, `research export markdown` и `research export site` не переписывают source of truth в `.research`.
 
 ## Документация
 
 - [Сценарии CLI](docs/ru/cli.md)
 - [Python API](docs/ru/python-api.md)
 - [Проверка согласованности](docs/ru/consistency-check.md)
+- [Research Snapshot](docs/ru/research-snapshot.md)
+- [Research archive](docs/ru/archive.md)
+- [Экспорт в Markdown](docs/ru/markdown-export.md)
+- [Экспорт статического сайта](docs/ru/static-site.md)
 - [Формат данных на диске](docs/ru/data-format.md)
 - [Архитектура и границы](docs/ru/architecture.md)
 - [English documentation](README.md)
