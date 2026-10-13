@@ -10,10 +10,10 @@ readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.10"
 license = "Apache-2.0"
 authors = [
-  { name = "Mstislav Maslennikov", email = "17181470+mmaslennikov@users.noreply.github.com" },
+  { name = "Mstislav Maslennikov", email = "ml.arch@inbox.ru" },
 ]
 maintainers = [
-  { name = "Mstislav Maslennikov", email = "17181470+mmaslennikov@users.noreply.github.com" },
+  { name = "Mstislav Maslennikov", email = "ml.arch@inbox.ru" },
 ]
 keywords = ["machine-learning", "research", "experiments", "reproducibility", "ml-research"]
 classifiers = [
