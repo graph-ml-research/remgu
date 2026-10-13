@@ -150,3 +150,78 @@ class TestResearchCli(unittest.TestCase):
         """Report an empty research store clearly."""
         _, output = self.run_cli("previous")
         self.assertEqual(output.strip(), "runs: none")
+
+class TestResearchPublicationCli(unittest.TestCase):
+    """Verify snapshot and archive CLI publication commands."""
+
+    def setUp(self) -> None:
+        """Create an isolated CLI research store."""
+        self._temporary_directory = tempfile.TemporaryDirectory()
+        self.base = Path(self._temporary_directory.name) / ".research"
+
+    def tearDown(self) -> None:
+        """Remove the isolated research store."""
+        self._temporary_directory.cleanup()
+
+    def run_cli(self, *args: str) -> tuple[int, str]:
+        """Run the CLI and capture standard output.
+
+        Args:
+            args: Command-line arguments following the executable name.
+        """
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            code = main(("--base-path", str(self.base), *args))
+        return code, output.getvalue()
+
+    def test_update_is_read_only_on_empty_project(self) -> None:
+        """Build an empty snapshot without creating research files."""
+        code, output = self.run_cli("update")
+        self.assertEqual(code, 0)
+        self.assertIn("Research updated.", output)
+        self.assertIn("Runs: 0", output)
+        self.assertFalse(self.base.exists())
+
+    def test_archive_cli_creates_requested_output(self) -> None:
+        """Create a ZIP archive at the requested destination."""
+        code, output = self.run_cli("archive", "--output", str(Path(self._temporary_directory.name) / "out.zip"))
+        self.assertEqual(code, 0)
+        self.assertTrue(Path(output.strip()).exists())
+
+    def test_export_markdown_cli_creates_requested_output(self) -> None:
+        """Export the empty snapshot as a standalone Markdown document."""
+        destination = Path(self._temporary_directory.name) / "research.md"
+        code, output = self.run_cli("export", "markdown", "--output", str(destination))
+        self.assertEqual(code, 0)
+        self.assertEqual(Path(output.strip()), destination)
+        content = destination.read_text(encoding="utf-8")
+        self.assertIn("# Research report", content)
+        self.assertIn("Total runs: 0", content)
+        self.assertFalse(self.base.exists())
+
+    def test_export_markdown_cli_refuses_to_overwrite(self) -> None:
+        """Preserve an existing report instead of overwriting it implicitly."""
+        destination = Path(self._temporary_directory.name) / "research.md"
+        destination.write_text("keep me", encoding="utf-8")
+        with self.assertRaisesRegex(SystemExit, "already exists"):
+            self.run_cli("export", "markdown", "--output", str(destination))
+        self.assertEqual(destination.read_text(encoding="utf-8"), "keep me")
+
+    def test_export_site_cli_creates_static_site(self) -> None:
+        """Export an empty snapshot to the requested static site directory."""
+        destination = Path(self._temporary_directory.name) / "site"
+        code, output = self.run_cli("export", "site", "--output", str(destination))
+        self.assertEqual(code, 0)
+        self.assertEqual(Path(output.strip()), destination)
+        self.assertTrue((destination / "index.html").is_file())
+        self.assertTrue((destination / "style.css").is_file())
+        self.assertTrue((destination / "examples" / "index.html").is_file())
+        self.assertFalse(self.base.exists())
+
+    def test_export_site_refuses_output_inside_research_store(self) -> None:
+        """Keep generated publication artifacts outside the source-of-truth tree."""
+        destination = self.base / "site"
+        with self.assertRaisesRegex(SystemExit, "outside the research data directory"):
+            self.run_cli("export", "site", "--output", str(destination))
+        self.assertFalse(self.base.exists())
+

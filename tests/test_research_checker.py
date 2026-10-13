@@ -60,7 +60,7 @@ class TestResearchChecker(unittest.TestCase):
         """Count completed runs and runs with hypotheses."""
         self.write_run("run-001", self.base_run(conclusion="supported", next_step="H2"))
         self.write_run("run-002", self.base_run(hypothesis="H2", status="failed"))
-        report = ResearchChecker(self.storage).check()
+        report = ResearchChecker(self.base).check()
         self.assertEqual(report.completed_runs, ["run-001"])
         self.assertEqual(report.runs_with_hypotheses, ["run-001", "run-002"])
         self.assertEqual(report.issues, [])
@@ -68,7 +68,7 @@ class TestResearchChecker(unittest.TestCase):
     def test_check_flags_weak_motivation_and_missing_conclusion(self) -> None:
         """Report incomplete previous-run motivation and conclusion."""
         self.write_run("run-001", self.base_run(motivation={"type": "previous_run"}))
-        codes = {issue.code for issue in ResearchChecker(self.storage).check().issues}
+        codes = {issue.code for issue in ResearchChecker(self.base).check().issues}
         self.assertIn("weak_motivation", codes)
         self.assertIn("missing_conclusion", codes)
 
@@ -76,14 +76,14 @@ class TestResearchChecker(unittest.TestCase):
         """Do not require conclusions for failed or aborted executions."""
         self.write_run("run-001", self.base_run(status="failed"))
         self.write_run("run-002", self.base_run(status="aborted"))
-        report = ResearchChecker(self.storage).check()
+        report = ResearchChecker(self.base).check()
         self.assertEqual(report.completed_runs, [])
         self.assertFalse(any(issue.code == "missing_conclusion" for issue in report.issues))
 
     def test_check_detects_broken_previous_run_reference(self) -> None:
         """Detect references to nonexistent previous runs."""
         self.write_run("run-001", self.base_run(motivation={"type": "previous_run", "reference": "run-999"}, conclusion="done", next_step="next"))
-        self.assertTrue(any(issue.code == "broken_motivation_reference" for issue in ResearchChecker(self.storage).check().issues))
+        self.assertTrue(any(issue.code == "broken_motivation_reference" for issue in ResearchChecker(self.base).check().issues))
 
     def test_check_is_read_only(self) -> None:
         """Guarantee that consistency checking does not modify run YAML."""
@@ -91,6 +91,6 @@ class TestResearchChecker(unittest.TestCase):
         self.write_run("run-001", data)
         path = self.base / "runs" / "run-001" / "run.yaml"
         before = path.read_bytes()
-        ResearchChecker(self.storage).check()
+        ResearchChecker(self.base).check()
         self.assertEqual(path.read_bytes(), before)
 

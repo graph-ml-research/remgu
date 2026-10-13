@@ -16,6 +16,8 @@ from remgu.models.research_metadata import ResearchMetadata
 from remgu.models.review import Review
 from remgu.run import Run
 from remgu.file_storage import FileStorage
+from remgu.research_snapshot import ResearchSnapshotBuilder
+from remgu.publication import ArchiveAdapter, MarkdownAdapter, StaticSiteAdapter
 
 
 class ResearchCli:
@@ -57,6 +59,19 @@ class ResearchCli:
         status.set_defaults(func=self._cmd_status)
         check = subparsers.add_parser("check")
         check.set_defaults(func=self._cmd_check)
+        update = subparsers.add_parser("update")
+        update.set_defaults(func=self._cmd_update)
+        archive = subparsers.add_parser("archive")
+        archive.add_argument("--output", default="research-archive.zip")
+        archive.set_defaults(func=self._cmd_archive)
+        export = subparsers.add_parser("export")
+        export_subparsers = export.add_subparsers(dest="export_format", required=True)
+        markdown = export_subparsers.add_parser("markdown")
+        markdown.add_argument("--output", default="research.md")
+        markdown.set_defaults(func=self._cmd_export_markdown)
+        site = export_subparsers.add_parser("site")
+        site.add_argument("--output", default="site")
+        site.set_defaults(func=self._cmd_export_site)
         previous = subparsers.add_parser("previous")
         previous.add_argument("--limit", type=int, default=5)
         previous.set_defaults(func=self._cmd_previous)
@@ -175,6 +190,75 @@ class ResearchCli:
         storage = self._storage(args)
         report = ResearchChecker(storage).check()
         self._print_report(report)
+        return 0
+
+    def _cmd_update(self, args: argparse.Namespace) -> int:
+        """Build a read-only research snapshot and print its summary.
+
+        Args:
+            args: Parsed ``update`` command arguments.
+        """
+        snapshot = ResearchSnapshotBuilder(args.base_path).build()
+        print("Research updated.")
+        print()
+        print(f"Runs: {snapshot.summary.total_runs}")
+        print(f"Completed: {snapshot.summary.completed}")
+        print(f"Failed: {snapshot.summary.failed}")
+        print(f"Aborted: {snapshot.summary.aborted}")
+        print(f"Running: {snapshot.summary.running}")
+        print()
+        print(f"Reviewed: {snapshot.summary.reviewed}")
+        print(f"Needs review: {snapshot.summary.needs_review}")
+        warnings = sum(issue.severity != "error" for issue in snapshot.findings)
+        errors = sum(issue.severity == "error" for issue in snapshot.findings)
+        print()
+        print(f"Findings: {warnings} warnings, {errors} errors")
+        return 0
+
+    def _cmd_archive(self, args: argparse.Namespace) -> int:
+        """Build a snapshot and publish it as a self-contained ZIP archive.
+
+        Args:
+            args: Parsed ``archive`` command arguments, including ``output``.
+        """
+        snapshot = ResearchSnapshotBuilder(args.base_path).build()
+        try:
+            output = ArchiveAdapter(args.base_path).create(snapshot, args.output)
+        except FileExistsError as exc:
+            raise SystemExit(str(exc)) from exc
+        print(output)
+        return 0
+
+    def _cmd_export_markdown(self, args: argparse.Namespace) -> int:
+        """Publish the current research snapshot as a standalone Markdown file.
+
+        Args:
+            args: Parsed Markdown export arguments, including ``output``.
+        """
+        snapshot = ResearchSnapshotBuilder(args.base_path).build()
+        try:
+            output = MarkdownAdapter().export(snapshot, args.output)
+        except FileExistsError as exc:
+            raise SystemExit(str(exc)) from exc
+        print(output)
+        return 0
+
+    def _cmd_export_site(self, args: argparse.Namespace) -> int:
+        """Publish the current research snapshot as a fully static HTML site.
+
+        Args:
+            args: Parsed site export arguments, including the output directory.
+        """
+        research_root = Path(args.base_path).resolve()
+        destination = Path(args.output).resolve()
+        if destination == research_root or research_root in destination.parents:
+            raise SystemExit("Static site output must be outside the research data directory")
+        snapshot = ResearchSnapshotBuilder(args.base_path).build()
+        try:
+            output = StaticSiteAdapter().export(snapshot, args.output)
+        except FileExistsError as exc:
+            raise SystemExit(str(exc)) from exc
+        print(output)
         return 0
 
     def _cmd_status(self, args: argparse.Namespace) -> int:
