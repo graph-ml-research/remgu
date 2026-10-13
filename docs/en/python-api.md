@@ -142,19 +142,19 @@ class MyExampleProvider:
         return f"label={row['label']}, source={row['source']}"
 ```
 
-`dataset.lookup` is an application-specific placeholder. ReMgu does not prescribe or persist a provider. For exports, you can inject an instance into `ResearchSnapshotBuilder` and opt into short descriptions; this keeps the publication adapters snapshot-only:
+`dataset.lookup` is an application-specific placeholder. ReMgu does not prescribe or persist a provider. Descriptions are enabled by default: pass a configured instance to `ResearchSnapshotBuilder`. Set `describe_examples=False` when descriptions are not useful (for example, when images are shown in a dedicated viewer). Publication adapters remain snapshot-only:
 
 ```python
 from remgu import ResearchSnapshotBuilder, StaticSiteAdapter
 
 provider = MyExampleProvider()  # configured by your application
 snapshot = ResearchSnapshotBuilder(
-    ".research", example_provider=provider, describe_examples=True
+    ".research", example_provider=provider
 ).build()
 StaticSiteAdapter().export(snapshot, "site")
 ```
 
-Descriptions are added only to the in-memory snapshot and are not written back to `samples.jsonl`. `describe()` should be cheap and concise; it should not load a large sample or run model inference.
+Descriptions are added only to the in-memory snapshot and are not written back to `samples.jsonl`. `describe()` should produce a compact view that helps explain the model decision: the focal object, selected neighbours, and only relevant properties. Do not serialize the entire object, load a large sample, or run model inference.
 
 ## Lifecycle and exceptions
 
@@ -193,7 +193,7 @@ Important research-layer classes are exported directly from `remgu`:
 from remgu import ResearchChecker, ResearchSnapshotBuilder
 
 report = ResearchChecker(".research").check()
-snapshot = ResearchSnapshotBuilder(".research").build()
+snapshot = ResearchSnapshotBuilder(".research", describe_examples=False).build()
 ```
 
 `FileStorage` is an implementation detail here; student-facing code should not need to construct it just to run consistency checks.
@@ -203,7 +203,7 @@ snapshot = ResearchSnapshotBuilder(".research").build()
 ```python
 from remgu import MarkdownAdapter, ResearchSnapshotBuilder
 
-snapshot = ResearchSnapshotBuilder(".research").build()
+snapshot = ResearchSnapshotBuilder(".research", describe_examples=False).build()
 report_path = MarkdownAdapter().export(snapshot, "research.md")
 ```
 
@@ -215,7 +215,7 @@ report_path = MarkdownAdapter().export(snapshot, "research.md")
 ```python
 from remgu import ResearchSnapshotBuilder, StaticSiteAdapter
 
-snapshot = ResearchSnapshotBuilder(".research").build()
+snapshot = ResearchSnapshotBuilder(".research", describe_examples=False).build()
 site_path = StaticSiteAdapter().export(snapshot, "site")
 ```
 

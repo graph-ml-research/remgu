@@ -142,14 +142,15 @@ research export site --output ./reports/site
 
 Команда строит `ResearchSnapshot` и генерирует статический HTML-сайт: `index.html`, отдельную страницу каждого запуска в `runs/`, каталог примеров в `examples/` и общий `style.css`. Backend, JavaScript-фреймворк и JavaScript не требуются. Каталог назначения не должен существовать заранее. Сайт можно открыть локально или позднее разместить на статическом хостинге; deployment в ReMgu не входит. См. [Экспорт статического сайта](static-site.md).
 
-### Краткие описания примеров
+### Краткие описания примеров (по умолчанию включены)
 
-Markdown-отчёт и статический сайт можно дополнить описаниями через `ExampleProvider` конкретного приложения:
+Markdown-отчёт и статический сайт по умолчанию требуют `ExampleProvider` конкретного приложения и добавляют описания к примерам:
 
 ```bash
-research export site --describe-examples --example-provider my_project.examples:MyExampleProvider
-research export markdown --describe-examples --example-provider my_project.examples:MyExampleProvider
+research export site --example-provider my_project.examples:MyExampleProvider
+research export markdown --example-provider my_project.examples:MyExampleProvider
+research export site --no-describe-examples
 ```
 
-Класс provider должен импортироваться по указанному пути и создаваться без аргументов; нужную конфигурацию можно читать в конструкторе из окружения или конфигурационных файлов. `describe(example_id)` должен быть дешёвым и кратким. Описания существуют только в snapshot и не меняют `samples.jsonl`. Без provider экспорт сохраняет исходные компактные записи.
+Класс provider должен импортироваться по указанному пути и создаваться без аргументов; нужную конфигурацию можно читать в конструкторе из окружения или конфигурационных файлов. `describe(example_id)` должен кратко показывать центральный объект и релевантный контекст (например, выбранных соседей и их свойства), а не сериализовать весь объект. Описания существуют только в snapshot и не меняют `samples.jsonl`. Если описания не нужны, укажите `--no-describe-examples`. Без provider команда по умолчанию завершится с понятной ошибкой. Пустое описание также считается ошибкой, а не молча пропускается.
 

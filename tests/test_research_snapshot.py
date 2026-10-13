@@ -45,7 +45,7 @@ class TestResearchSnapshot(unittest.TestCase):
 
     def test_empty_project_is_empty_and_read_only(self) -> None:
         """Build an empty snapshot without creating the runs directory."""
-        snapshot = ResearchSnapshotBuilder(self.base).build()
+        snapshot = ResearchSnapshotBuilder(self.base, describe_examples=False).build()
         self.assertEqual(snapshot.summary.total_runs, 0)
         self.assertEqual(snapshot.runs, [])
         self.assertEqual(snapshot.findings, [])
@@ -55,7 +55,7 @@ class TestResearchSnapshot(unittest.TestCase):
         """Collect persisted metadata, artifacts and existing motivation relations."""
         first = self._completed_run("H1", Motivation(type="new"))
         second = self._completed_run("H2", Motivation(type="previous_run", reference=first))
-        snapshot = ResearchSnapshotBuilder(self.base).build()
+        snapshot = ResearchSnapshotBuilder(self.base, describe_examples=False).build()
         self.assertEqual(snapshot.summary.total_runs, 2)
         self.assertEqual(snapshot.summary.completed, 2)
         self.assertEqual(snapshot.summary.reviewed, 2)
@@ -72,7 +72,7 @@ class TestResearchSnapshot(unittest.TestCase):
         first.abort()
         second = experiment.run("H2", Motivation(type="new"))
         second.fail(RuntimeError("boom"))
-        snapshot = ResearchSnapshotBuilder(self.base).build()
+        snapshot = ResearchSnapshotBuilder(self.base, describe_examples=False).build()
         self.assertEqual(snapshot.summary.aborted, 1)
         self.assertEqual(snapshot.summary.failed, 1)
         self.assertEqual(snapshot.summary.completed, 0)
@@ -89,23 +89,37 @@ class TestResearchSnapshot(unittest.TestCase):
                 return {"id": example_id}
 
         with self.assertRaisesRegex(ValueError, "requires an example_provider"):
-            ResearchSnapshotBuilder(self.base, describe_examples=True)
+            ResearchSnapshotBuilder(self.base)
 
         snapshot = ResearchSnapshotBuilder(
-            self.base, example_provider=Provider(), describe_examples=True
+            self.base, example_provider=Provider()
         ).build()
         self.assertEqual(snapshot.samples[0]["description"], "User-item interaction for node-42")
         report = MarkdownAdapter().render(snapshot)
         self.assertIn("**Description:** User-item interaction for node-42", report)
 
-        plain_snapshot = ResearchSnapshotBuilder(self.base).build()
+        plain_snapshot = ResearchSnapshotBuilder(self.base, describe_examples=False).build()
         self.assertNotIn("description", plain_snapshot.samples[0])
+
+    def test_empty_provider_description_is_an_error(self) -> None:
+        """Reject a missing description rather than silently exporting a partial snapshot."""
+        self._completed_run("H1", Motivation(type="new"))
+
+        class EmptyProvider:
+            def describe(self, example_id: str) -> str:
+                return "  "
+
+            def get(self, example_id: str):
+                return {"id": example_id}
+
+        with self.assertRaisesRegex(ValueError, "must return a non-empty description"):
+            ResearchSnapshotBuilder(self.base, example_provider=EmptyProvider()).build()
 
     def test_snapshot_does_not_modify_source_files(self) -> None:
         """Ensure snapshot construction leaves source files byte-for-byte unchanged."""
         self._completed_run("H1", Motivation(type="new"))
         files = sorted(path for path in self.base.rglob("*") if path.is_file())
         before = {path.relative_to(self.base): hashlib.sha256(path.read_bytes()).digest() for path in files}
-        ResearchSnapshotBuilder(self.base).build()
+        ResearchSnapshotBuilder(self.base, describe_examples=False).build()
         after = {path.relative_to(self.base): hashlib.sha256(path.read_bytes()).digest() for path in files}
         self.assertEqual(before, after)

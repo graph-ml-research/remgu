@@ -55,7 +55,7 @@ class TestMarkdownAdapter(unittest.TestCase):
 
     def test_empty_project_contains_all_required_sections(self) -> None:
         """Render an empty snapshot with all report sections and no source writes."""
-        snapshot = ResearchSnapshotBuilder(self.base).build()
+        snapshot = ResearchSnapshotBuilder(self.base, describe_examples=False).build()
         markdown = self.adapter.render(snapshot)
         self.assertIn("# Research report", markdown)
         for heading in ("## Summary", "## Research history", "## Relations", "## Collected examples", "## Consistency", "## Conclusions"):
@@ -66,7 +66,7 @@ class TestMarkdownAdapter(unittest.TestCase):
     def test_one_run_includes_hypothesis_params_metrics_and_sample(self) -> None:
         """Render core run metadata and compact artifacts from the snapshot."""
         self._create_run("H1 improves AUC", Motivation(type="new"))
-        markdown = self.adapter.render(ResearchSnapshotBuilder(self.base).build())
+        markdown = self.adapter.render(ResearchSnapshotBuilder(self.base, describe_examples=False).build())
         self.assertIn("### run-001", markdown)
         self.assertIn("H1 improves AUC", markdown)
         self.assertIn("Execution status:", markdown)
@@ -80,7 +80,7 @@ class TestMarkdownAdapter(unittest.TestCase):
         """Render runs in snapshot order and show existing motivation references."""
         first = self._create_run("H1 baseline", Motivation(type="new"), reviewed=True)
         second = self._create_run("H2 follow-up", Motivation(type="previous_run", reference=first))
-        markdown = self.adapter.render(ResearchSnapshotBuilder(self.base).build())
+        markdown = self.adapter.render(ResearchSnapshotBuilder(self.base, describe_examples=False).build())
         self.assertLess(markdown.index("### run-001"), markdown.index("### run-002"))
         self.assertIn(f"`{second}` ← `{first}`", markdown)
         self.assertIn("AUC improved on validation data.", markdown)
@@ -93,7 +93,7 @@ class TestMarkdownAdapter(unittest.TestCase):
         aborted.abort()
         failed = experiment.run("H-failed", Motivation(type="new"))
         failed.fail(RuntimeError("training failed"))
-        markdown = self.adapter.render(ResearchSnapshotBuilder(self.base).build())
+        markdown = self.adapter.render(ResearchSnapshotBuilder(self.base, describe_examples=False).build())
         self.assertIn("- Failed: 1", markdown)
         self.assertIn("- Aborted: 1", markdown)
         self.assertIn("`failed`", markdown)
@@ -102,14 +102,14 @@ class TestMarkdownAdapter(unittest.TestCase):
     def test_consistency_findings_are_included(self) -> None:
         """Surface existing consistency warnings without inferring conclusions."""
         self._create_run("H1 without review", Motivation(type="new"))
-        markdown = self.adapter.render(ResearchSnapshotBuilder(self.base).build())
+        markdown = self.adapter.render(ResearchSnapshotBuilder(self.base, describe_examples=False).build())
         self.assertIn("Findings: 1 warnings, 0 errors.", markdown)
         self.assertIn("missing_conclusion", markdown)
         self.assertIn("completed run has no conclusion", markdown)
 
     def test_consistency_errors_are_counted_and_rendered(self) -> None:
         """Render error-level consistency findings distinctly from warnings."""
-        snapshot = ResearchSnapshotBuilder(self.base).build()
+        snapshot = ResearchSnapshotBuilder(self.base, describe_examples=False).build()
         snapshot.findings.append(ConsistencyIssue("run-999", "invalid_structure", "run record is malformed", "error"))
         markdown = self.adapter.render(snapshot)
         self.assertIn("Findings: 0 warnings, 1 errors.", markdown)
@@ -122,7 +122,7 @@ class TestMarkdownAdapter(unittest.TestCase):
         self._create_run("H1", Motivation(type="new"), reviewed=True)
         source_files = sorted(path for path in self.base.rglob("*") if path.is_file())
         before = {path.relative_to(self.base): hashlib.sha256(path.read_bytes()).digest() for path in source_files}
-        snapshot = ResearchSnapshotBuilder(self.base).build()
+        snapshot = ResearchSnapshotBuilder(self.base, describe_examples=False).build()
         result = self.adapter.export(snapshot, self.output)
         self.assertEqual(result, self.output)
         after = {path.relative_to(self.base): hashlib.sha256(path.read_bytes()).digest() for path in source_files}

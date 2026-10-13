@@ -94,7 +94,7 @@ class ResearchSnapshotBuilder:
         self,
         base_path: str = ".research",
         example_provider: ExampleProvider | None = None,
-        describe_examples: bool = False,
+        describe_examples: bool = True,
     ) -> None:
         """Create a snapshot builder for a research directory.
 
@@ -102,6 +102,7 @@ class ResearchSnapshotBuilder:
             base_path: Root directory containing the persisted research data.
             example_provider: Optional domain-specific provider used to describe sample IDs.
             describe_examples: Whether to enrich snapshot samples with provider descriptions.
+                Enabled by default; pass ``False`` when descriptions are not needed.
                 Requires ``example_provider`` when enabled.
         """
         if describe_examples and example_provider is None:
@@ -144,7 +145,7 @@ class ResearchSnapshotBuilder:
                                 findings=findings_report.issues, summary_text=summary_text)
 
     def _describe_sample(self, sample: dict[str, Any]) -> dict[str, Any]:
-        """Optionally attach a cheap, human-readable description to a sample.
+        """Attach a cheap, human-readable description to a sample by default.
 
         The enrichment exists only in the in-memory snapshot; persisted sample
         records are never modified. Provider errors propagate so a requested
@@ -157,8 +158,11 @@ class ResearchSnapshotBuilder:
         if not isinstance(example_id, str) or not example_id.strip():
             return enriched
         description = self.example_provider.describe(example_id)
-        if isinstance(description, str) and description.strip():
-            enriched["description"] = description.strip()
+        if not isinstance(description, str) or not description.strip():
+            raise ValueError(
+                f"ExampleProvider.describe({example_id!r}) must return a non-empty description"
+            )
+        enriched["description"] = description.strip()
         return enriched
 
     def _build_run(self, run_id: str) -> ResearchSnapshotRun:

@@ -11,13 +11,13 @@ It is **not** a persisted domain entity and never becomes a second source of tru
 ```python
 from remgu import ResearchSnapshotBuilder
 
-snapshot = ResearchSnapshotBuilder(".research").build()
+snapshot = ResearchSnapshotBuilder(".research", describe_examples=False).build()
 print(snapshot.summary.total_runs)
 print(snapshot.summary.completed)
 print(snapshot.summary.reviewed)
 ```
 
-The builder reads existing `run.yaml`, `params.yaml`, `metrics.csv`, and `samples.jsonl` files. It also runs the read-only consistency checker and places its findings into `snapshot.findings`.
+The builder reads existing `run.yaml`, `params.yaml`, `metrics.csv`, and `samples.jsonl` files. By default it also requires an `ExampleProvider` and adds a short description to each sample with an `example_id`. Explicitly pass `describe_examples=False` when descriptions are not needed. A missing provider or an empty description in enabled mode raises an error. The builder also runs the read-only consistency checker and places its findings into `snapshot.findings`.
 
 ## Model
 

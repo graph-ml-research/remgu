@@ -142,19 +142,19 @@ class MyExampleProvider:
         return f"label={row['label']}, source={row['source']}"
 ```
 
-`dataset.lookup` — условный метод вашего проекта. ReMgu не навязывает и не сохраняет provider. Для экспорта можно передать настроенный экземпляр в `ResearchSnapshotBuilder` и включить краткие описания; сами адаптеры публикации по-прежнему работают только со snapshot:
+`dataset.lookup` — условный метод вашего проекта. ReMgu не навязывает и не сохраняет provider. Описания включены по умолчанию: передайте настроенный экземпляр в `ResearchSnapshotBuilder`. Если описания не нужны (например, для изображений, которые отображаются отдельным viewer), укажите `describe_examples=False`. Адаптеры публикации по-прежнему работают только со snapshot:
 
 ```python
 from remgu import ResearchSnapshotBuilder, StaticSiteAdapter
 
 provider = MyExampleProvider()  # настроен вашим приложением
 snapshot = ResearchSnapshotBuilder(
-    ".research", example_provider=provider, describe_examples=True
+    ".research", example_provider=provider
 ).build()
 StaticSiteAdapter().export(snapshot, "site")
 ```
 
-Описания добавляются только в snapshot в памяти и не записываются обратно в `samples.jsonl`. Метод `describe()` должен быть дешёвым и кратким: не загружать целиком большой пример и не запускать инференс модели.
+Описания добавляются только в snapshot в памяти и не записываются обратно в `samples.jsonl`. Метод `describe()` должен формировать компактное представление для понимания решения модели: центральный объект, выбранные соседние вершины и только релевантные свойства. Не сериализуйте весь объект, не загружайте большой пример целиком и не запускайте инференс модели.
 
 ## Жизненный цикл и исключения
 
@@ -193,7 +193,7 @@ from remgu import (
 from remgu import ResearchChecker, ResearchSnapshotBuilder
 
 report = ResearchChecker(".research").check()
-snapshot = ResearchSnapshotBuilder(".research").build()
+snapshot = ResearchSnapshotBuilder(".research", describe_examples=False).build()
 ```
 
 `FileStorage` здесь является внутренней деталью реализации; пользовательскому коду студентов не нужно создавать его вручную только ради проверки согласованности.
@@ -203,7 +203,7 @@ snapshot = ResearchSnapshotBuilder(".research").build()
 ```python
 from remgu import MarkdownAdapter, ResearchSnapshotBuilder
 
-snapshot = ResearchSnapshotBuilder(".research").build()
+snapshot = ResearchSnapshotBuilder(".research", describe_examples=False).build()
 report_path = MarkdownAdapter().export(snapshot, "research.md")
 ```
 
@@ -215,7 +215,7 @@ report_path = MarkdownAdapter().export(snapshot, "research.md")
 ```python
 from remgu import ResearchSnapshotBuilder, StaticSiteAdapter
 
-snapshot = ResearchSnapshotBuilder(".research").build()
+snapshot = ResearchSnapshotBuilder(".research", describe_examples=False).build()
 site_path = StaticSiteAdapter().export(snapshot, "site")
 ```
 

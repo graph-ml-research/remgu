@@ -56,7 +56,7 @@ class TestStaticSiteAdapter(unittest.TestCase):
 
     def test_empty_project_generates_expected_pages(self) -> None:
         """Generate an empty static site without creating the source store."""
-        snapshot = ResearchSnapshotBuilder(self.base).build()
+        snapshot = ResearchSnapshotBuilder(self.base, describe_examples=False).build()
         result = self.adapter.export(snapshot, self.output)
         self.assertEqual(result, self.output)
         self.assertEqual(
@@ -72,7 +72,7 @@ class TestStaticSiteAdapter(unittest.TestCase):
     def test_one_run_page_contains_metrics_params_and_examples(self) -> None:
         """Render the run's hypothesis, metrics, parameters, and compact sample."""
         self._create_run("H1 improves AUC", Motivation(type="new"), reviewed=True)
-        self.adapter.export(ResearchSnapshotBuilder(self.base).build(), self.output)
+        self.adapter.export(ResearchSnapshotBuilder(self.base, describe_examples=False).build(), self.output)
         run_page = (self.output / "runs" / "run-001.html").read_text(encoding="utf-8")
         self.assertIn("H1 improves AUC", run_page)
         self.assertIn("Validation AUC improved.", run_page)
@@ -87,7 +87,7 @@ class TestStaticSiteAdapter(unittest.TestCase):
         """Link every run from the index and retain motivation references."""
         first = self._create_run("H1 baseline", Motivation(type="new"), reviewed=True)
         self._create_run("H2 follow-up", Motivation(type="previous_run", reference=first))
-        snapshot = ResearchSnapshotBuilder(self.base).build()
+        snapshot = ResearchSnapshotBuilder(self.base, describe_examples=False).build()
         index = self.adapter.render_index(snapshot)
         self.assertIn('href="runs/run-001.html"', index)
         self.assertIn('href="runs/run-002.html"', index)
@@ -103,7 +103,7 @@ class TestStaticSiteAdapter(unittest.TestCase):
         aborted.abort()
         failed = experiment.run("H-failed", Motivation(type="new"))
         failed.fail(RuntimeError("training failed"))
-        snapshot = ResearchSnapshotBuilder(self.base).build()
+        snapshot = ResearchSnapshotBuilder(self.base, describe_examples=False).build()
         index = self.adapter.render_index(snapshot)
         self.assertIn("Failed", index)
         self.assertIn("Aborted", index)
@@ -113,7 +113,7 @@ class TestStaticSiteAdapter(unittest.TestCase):
     def test_examples_catalogue_and_consistency_findings_are_rendered(self) -> None:
         """Publish compact examples and consistency findings in static HTML."""
         self._create_run("H without review", Motivation(type="new"))
-        snapshot = ResearchSnapshotBuilder(self.base).build()
+        snapshot = ResearchSnapshotBuilder(self.base, describe_examples=False).build()
         snapshot.findings.append(ConsistencyIssue("run-001", "test_warning", "sample warning", "warning"))
         self.adapter.export(snapshot, self.output)
         index = (self.output / "index.html").read_text(encoding="utf-8")
@@ -148,7 +148,7 @@ class TestStaticSiteAdapter(unittest.TestCase):
     def test_dynamic_content_is_html_escaped(self) -> None:
         """Escape untrusted snapshot strings rather than treating them as markup."""
         self._create_run("H1 <script>alert('x')</script>", Motivation(type="new"))
-        snapshot = ResearchSnapshotBuilder(self.base).build()
+        snapshot = ResearchSnapshotBuilder(self.base, describe_examples=False).build()
         index = self.adapter.render_index(snapshot)
         self.assertNotIn("<script>alert('x')</script>", index)
         self.assertIn("&lt;script&gt;", index)
@@ -158,7 +158,7 @@ class TestStaticSiteAdapter(unittest.TestCase):
         self._create_run("H1", Motivation(type="new"), reviewed=True)
         source_files = [path for path in self.base.rglob("*") if path.is_file()]
         before = {path.relative_to(self.base): hashlib.sha256(path.read_bytes()).digest() for path in source_files}
-        snapshot = ResearchSnapshotBuilder(self.base).build()
+        snapshot = ResearchSnapshotBuilder(self.base, describe_examples=False).build()
         self.adapter.export(snapshot, self.output)
         after = {path.relative_to(self.base): hashlib.sha256(path.read_bytes()).digest() for path in source_files}
         self.assertEqual(before, after)

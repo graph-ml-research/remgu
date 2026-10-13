@@ -213,7 +213,7 @@ class TestResearchPublicationCli(unittest.TestCase):
             output = Path(self._temporary_directory.name) / "site"
             code, _ = self.run_cli(
                 "export", "site", "--output", str(output),
-                "--describe-examples", "--example-provider", "fixture_provider:Provider",
+                "--example-provider", "fixture_provider:Provider",
             )
         finally:
             sys.path.remove(str(provider_dir))
@@ -223,10 +223,15 @@ class TestResearchPublicationCli(unittest.TestCase):
         page = (output / "examples" / "index.html").read_text(encoding="utf-8")
         self.assertIn("Fixture description for node-42", page)
 
+    def test_export_requires_provider_by_default(self) -> None:
+        """Require an application provider unless descriptions are explicitly disabled."""
+        with self.assertRaisesRegex(SystemExit, "Example descriptions are enabled by default"):
+            self.run_cli("export", "markdown", "--output", str(Path(self._temporary_directory.name) / "research.md"))
+
     def test_export_markdown_cli_creates_requested_output(self) -> None:
         """Export the empty snapshot as a standalone Markdown document."""
         destination = Path(self._temporary_directory.name) / "research.md"
-        code, output = self.run_cli("export", "markdown", "--output", str(destination))
+        code, output = self.run_cli("export", "markdown", "--no-describe-examples", "--output", str(destination))
         self.assertEqual(code, 0)
         self.assertEqual(Path(output.strip()), destination)
         content = destination.read_text(encoding="utf-8")
@@ -239,13 +244,13 @@ class TestResearchPublicationCli(unittest.TestCase):
         destination = Path(self._temporary_directory.name) / "research.md"
         destination.write_text("keep me", encoding="utf-8")
         with self.assertRaisesRegex(SystemExit, "already exists"):
-            self.run_cli("export", "markdown", "--output", str(destination))
+            self.run_cli("export", "markdown", "--no-describe-examples", "--output", str(destination))
         self.assertEqual(destination.read_text(encoding="utf-8"), "keep me")
 
     def test_export_site_cli_creates_static_site(self) -> None:
         """Export an empty snapshot to the requested static site directory."""
         destination = Path(self._temporary_directory.name) / "site"
-        code, output = self.run_cli("export", "site", "--output", str(destination))
+        code, output = self.run_cli("export", "site", "--no-describe-examples", "--output", str(destination))
         self.assertEqual(code, 0)
         self.assertEqual(Path(output.strip()), destination)
         self.assertTrue((destination / "index.html").is_file())
@@ -257,6 +262,6 @@ class TestResearchPublicationCli(unittest.TestCase):
         """Keep generated publication artifacts outside the source-of-truth tree."""
         destination = self.base / "site"
         with self.assertRaisesRegex(SystemExit, "outside the research data directory"):
-            self.run_cli("export", "site", "--output", str(destination))
+            self.run_cli("export", "site", "--no-describe-examples", "--output", str(destination))
         self.assertFalse(self.base.exists())
 

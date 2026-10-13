@@ -11,13 +11,13 @@
 ```python
 from remgu import ResearchSnapshotBuilder
 
-snapshot = ResearchSnapshotBuilder(".research").build()
+snapshot = ResearchSnapshotBuilder(".research", describe_examples=False).build()
 print(snapshot.summary.total_runs)
 print(snapshot.summary.completed)
 print(snapshot.summary.reviewed)
 ```
 
-Builder читает существующие `run.yaml`, `params.yaml`, `metrics.csv` и `samples.jsonl`. Кроме того, запускается read-only проверка согласованности, а её findings попадают в `snapshot.findings`.
+Builder читает существующие `run.yaml`, `params.yaml`, `metrics.csv` и `samples.jsonl`. По умолчанию он также требует `ExampleProvider` и добавляет к каждому sample с `example_id` краткое описание. Если описания не нужны, это отключается явно через `describe_examples=False`. Отсутствующий provider или пустое описание при включённом режиме приводят к ошибке. Кроме того, запускается read-only проверка согласованности, а её findings попадают в `snapshot.findings`.
 
 ## Модель
 

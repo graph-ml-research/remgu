@@ -18,7 +18,11 @@ class ExampleProvider(Protocol):
         ...
 
     def describe(self, example_id: str) -> str:
-        """Return a cheap human-readable description of an example.
+        """Return a concise, human-readable view of an example.
+
+        Describe the focal object and only the context that helps interpret a
+        model decision (for example, selected neighbours and relevant features).
+        Avoid dumping or serializing the complete source object.
 
         Args:
             example_id: Compact identifier of the requested example.

@@ -38,7 +38,7 @@ class TestArchiveAdapter(unittest.TestCase):
 
     def test_empty_archive_contains_publication_files_only(self) -> None:
         """Publish an empty project without inventing run files."""
-        snapshot = ResearchSnapshotBuilder(self.base).build()
+        snapshot = ResearchSnapshotBuilder(self.base, describe_examples=False).build()
         ArchiveAdapter(self.base).create(snapshot, self.output)
         with zipfile.ZipFile(self.output) as archive:
             names = archive.namelist()
@@ -49,7 +49,7 @@ class TestArchiveAdapter(unittest.TestCase):
     def test_archive_contains_existing_artifacts_and_compact_examples(self) -> None:
         """Copy known run artifacts and publish serializable compact examples."""
         self._make_run()
-        snapshot = ResearchSnapshotBuilder(self.base).build()
+        snapshot = ResearchSnapshotBuilder(self.base, describe_examples=False).build()
         ArchiveAdapter(self.base).create(snapshot, self.output)
         with zipfile.ZipFile(self.output) as archive:
             names = archive.namelist()
@@ -68,7 +68,7 @@ class TestArchiveAdapter(unittest.TestCase):
     def test_archive_rejects_existing_output(self) -> None:
         """Never overwrite an existing archive implicitly."""
         self.output.write_bytes(b"existing")
-        snapshot = ResearchSnapshotBuilder(self.base).build()
+        snapshot = ResearchSnapshotBuilder(self.base, describe_examples=False).build()
         with self.assertRaisesRegex(FileExistsError, "already exists"):
             ArchiveAdapter(self.base).create(snapshot, self.output)
         self.assertEqual(self.output.read_bytes(), b"existing")
@@ -78,7 +78,7 @@ class TestArchiveAdapter(unittest.TestCase):
         self._make_run()
         files = sorted(path for path in self.base.rglob("*") if path.is_file())
         before = {path.relative_to(self.base): path.read_bytes() for path in files}
-        snapshot = ResearchSnapshotBuilder(self.base).build()
+        snapshot = ResearchSnapshotBuilder(self.base, describe_examples=False).build()
         ArchiveAdapter(self.base).create(snapshot, self.output)
         after = {path.relative_to(self.base): path.read_bytes() for path in files}
         self.assertEqual(before, after)
@@ -86,7 +86,7 @@ class TestArchiveAdapter(unittest.TestCase):
     def test_archive_zip_metadata_is_deterministic(self) -> None:
         """Use fixed ZIP entry metadata so binary archive differences are minimized."""
         self._make_run()
-        snapshot = ResearchSnapshotBuilder(self.base).build()
+        snapshot = ResearchSnapshotBuilder(self.base, describe_examples=False).build()
         first = Path(self.temp.name) / "one.zip"
         second = Path(self.temp.name) / "two.zip"
         ArchiveAdapter(self.base).create(snapshot, first)

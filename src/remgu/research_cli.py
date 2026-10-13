@@ -69,14 +69,20 @@ class ResearchCli:
         export_subparsers = export.add_subparsers(dest="export_format", required=True)
         markdown = export_subparsers.add_parser("markdown")
         markdown.add_argument("--output", default="research.md")
-        markdown.add_argument("--describe-examples", action="store_true",
-                              help="Add short descriptions via an ExampleProvider")
+        markdown.add_argument("--describe-examples", dest="describe_examples", action="store_true",
+                              help="Enable short descriptions via an ExampleProvider (default)")
+        markdown.add_argument("--no-describe-examples", dest="describe_examples", action="store_false",
+                              help="Disable example descriptions for this export")
+        markdown.set_defaults(describe_examples=True)
         markdown.add_argument("--example-provider", help="Import path module:Class for an ExampleProvider")
         markdown.set_defaults(func=self._cmd_export_markdown)
         site = export_subparsers.add_parser("site")
         site.add_argument("--output", default="site")
-        site.add_argument("--describe-examples", action="store_true",
-                          help="Add short descriptions via an ExampleProvider")
+        site.add_argument("--describe-examples", dest="describe_examples", action="store_true",
+                          help="Enable short descriptions via an ExampleProvider (default)")
+        site.add_argument("--no-describe-examples", dest="describe_examples", action="store_false",
+                          help="Disable example descriptions for this export")
+        site.set_defaults(describe_examples=True)
         site.add_argument("--example-provider", help="Import path module:Class for an ExampleProvider")
         site.set_defaults(func=self._cmd_export_site)
         previous = subparsers.add_parser("previous")
@@ -205,7 +211,7 @@ class ResearchCli:
         Args:
             args: Parsed ``update`` command arguments.
         """
-        snapshot = ResearchSnapshotBuilder(args.base_path).build()
+        snapshot = ResearchSnapshotBuilder(args.base_path, describe_examples=False).build()
         print("Research updated.")
         print()
         print(f"Runs: {snapshot.summary.total_runs}")
@@ -228,7 +234,7 @@ class ResearchCli:
         Args:
             args: Parsed ``archive`` command arguments, including ``output``.
         """
-        snapshot = ResearchSnapshotBuilder(args.base_path).build()
+        snapshot = ResearchSnapshotBuilder(args.base_path, describe_examples=False).build()
         try:
             output = ArchiveAdapter(args.base_path).create(snapshot, args.output)
         except FileExistsError as exc:
@@ -237,19 +243,19 @@ class ResearchCli:
         return 0
 
     def _snapshot_for_export(self, args: argparse.Namespace):
-        """Build an export snapshot, optionally enriching examples via a provider.
+        """Build an export snapshot with descriptions enabled unless explicitly disabled.
 
-        Provider classes are loaded only when description enrichment is explicitly
-        requested. The expected import syntax is ``package.module:ProviderClass``.
+        Example descriptions are enabled by default. Pass ``--no-describe-examples``
+        to opt out. The provider import syntax is ``package.module:ProviderClass``.
         """
-        describe = bool(getattr(args, "describe_examples", False))
+        describe = bool(getattr(args, "describe_examples", True))
         provider_path = getattr(args, "example_provider", None)
         if not describe:
             if provider_path:
-                raise SystemExit("--example-provider requires --describe-examples")
-            return ResearchSnapshotBuilder(args.base_path).build()
+                raise SystemExit("--example-provider cannot be used with --no-describe-examples")
+            return ResearchSnapshotBuilder(args.base_path, describe_examples=False).build()
         if not provider_path or ":" not in provider_path:
-            raise SystemExit("--describe-examples requires --example-provider package.module:ProviderClass")
+            raise SystemExit("Example descriptions are enabled by default; pass --example-provider package.module:ProviderClass or opt out with --no-describe-examples")
         module_name, class_name = provider_path.split(":", 1)
         if not module_name or not class_name:
             raise SystemExit("--example-provider must use package.module:ProviderClass")
