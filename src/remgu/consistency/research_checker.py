@@ -13,13 +13,13 @@ from remgu.file_storage import FileStorage
 class ResearchChecker:
     """Analyze persisted runs without modifying research state."""
 
-    def __init__(self, storage: FileStorage) -> None:
-        """Create a checker bound to a src storage service.
+    def __init__(self, base_path: str | FileStorage = ".research") -> None:
+        """Create a checker for a research directory.
 
         Args:
-            storage: File-backed src storage to inspect.
+            base_path: Research directory or an existing FileStorage kept for compatibility.
         """
-        self.storage = storage
+        self.storage = base_path if isinstance(base_path, FileStorage) else FileStorage(base_path)
         """Storage service whose run files are inspected."""
 
     def check(self) -> ConsistencyReport:

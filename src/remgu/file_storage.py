@@ -54,7 +54,8 @@ class FileStorage:
 
     def list_run_ids(self) -> list[str]:
         """Return valid run identifiers ordered by numeric suffix, oldest first."""
-        self.initialize()
+        if not self.runs_path.exists():
+            return []
         runs = []
         for path in self.runs_path.iterdir():
             if not path.is_dir() or not path.name.startswith("run-"):

@@ -51,7 +51,7 @@ class TestExperiment(unittest.TestCase):
 
     def test_run_without_arguments_requires_active_run(self) -> None:
         """Reject continuation when there is no active CLI-created run."""
-        with self.assertRaisesRegex(RuntimeError, "src new"):
+        with self.assertRaisesRegex(RuntimeError, "research new"):
             Experiment("graph-mamba", self.base_path).run()
 
     def test_run_without_arguments_does_not_create_second_run(self) -> None:
@@ -59,7 +59,7 @@ class TestExperiment(unittest.TestCase):
         experiment = Experiment("graph-mamba", self.base_path)
         with experiment.run("H1", Motivation(type="new")) as first:
             self.assertEqual(first.run_id, "run-001")
-        with self.assertRaisesRegex(RuntimeError, "src new"):
+        with self.assertRaisesRegex(RuntimeError, "research new"):
             experiment.run()
         self.assertFalse((self.base_path / "runs" / "run-002").exists())
 

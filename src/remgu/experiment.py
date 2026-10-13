@@ -50,7 +50,7 @@ class Experiment:
         """Load and validate the run referenced by the active pointer."""
         run_id = self.storage.get_active()
         if run_id is None:
-            raise RuntimeError("No active research run. Run `src new` first.")
+            raise RuntimeError("No active research run. Run `research new` first.")
         run = self._load_run(run_id)
         if run.execution.status != "running":
             self.storage.clear_active(run_id)
