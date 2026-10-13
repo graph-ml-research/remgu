@@ -124,6 +124,27 @@ class TestStaticSiteAdapter(unittest.TestCase):
         self.assertIn("compact diagnostic records", examples)
         self.assertNotIn("<script", examples.lower())
 
+    def test_example_descriptions_are_rendered_as_readable_text(self) -> None:
+        """Show provider descriptions before compact diagnostic JSON."""
+        self._create_run("H1", Motivation(type="new"))
+
+        class Provider:
+            def describe(self, example_id: str) -> str:
+                return f"Graph node {example_id}: high-degree user"
+
+            def get(self, example_id: str):
+                return {"id": example_id}
+
+        snapshot = ResearchSnapshotBuilder(
+            self.base, example_provider=Provider(), describe_examples=True
+        ).build()
+        self.adapter.export(snapshot, self.output)
+        examples = (self.output / "examples" / "index.html").read_text(encoding="utf-8")
+        run_page = (self.output / "runs" / "run-001.html").read_text(encoding="utf-8")
+        self.assertIn("Description:", examples)
+        self.assertIn("Graph node node-42: high-degree user", examples)
+        self.assertIn("Graph node node-42: high-degree user", run_page)
+
     def test_dynamic_content_is_html_escaped(self) -> None:
         """Escape untrusted snapshot strings rather than treating them as markup."""
         self._create_run("H1 <script>alert('x')</script>", Motivation(type="new"))

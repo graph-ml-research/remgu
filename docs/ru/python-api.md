@@ -142,7 +142,19 @@ class MyExampleProvider:
         return f"label={row['label']}, source={row['source']}"
 ```
 
-`dataset.lookup` — условный метод вашего проекта. Provider задаёт интерфейс; текущая версия автоматически его не создаёт и не сохраняет.
+`dataset.lookup` — условный метод вашего проекта. ReMgu не навязывает и не сохраняет provider. Для экспорта можно передать настроенный экземпляр в `ResearchSnapshotBuilder` и включить краткие описания; сами адаптеры публикации по-прежнему работают только со snapshot:
+
+```python
+from remgu import ResearchSnapshotBuilder, StaticSiteAdapter
+
+provider = MyExampleProvider()  # настроен вашим приложением
+snapshot = ResearchSnapshotBuilder(
+    ".research", example_provider=provider, describe_examples=True
+).build()
+StaticSiteAdapter().export(snapshot, "site")
+```
+
+Описания добавляются только в snapshot в памяти и не записываются обратно в `samples.jsonl`. Метод `describe()` должен быть дешёвым и кратким: не загружать целиком большой пример и не запускать инференс модели.
 
 ## Жизненный цикл и исключения
 

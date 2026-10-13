@@ -51,7 +51,7 @@ ResearchSnapshot  (memory only)
      └── future publication adapters
 ```
 
-The snapshot is not persisted and does not replace the run files. Publication adapters consume it and may copy only data that ReMgu already understands.
+The snapshot is not persisted and does not replace the run files. Publication adapters consume it and may copy only data that ReMgu already understands. Optionally, the builder can enrich sample IDs with short descriptions supplied by an application `ExampleProvider`; this enrichment is transient and does not modify source records.
 
 - `ExampleProvider` — protocol for application-specific resolution of example IDs.
 - `check_consistency` — read-only validation of persisted research records.

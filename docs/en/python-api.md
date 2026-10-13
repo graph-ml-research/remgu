@@ -142,7 +142,19 @@ class MyExampleProvider:
         return f"label={row['label']}, source={row['source']}"
 ```
 
-`dataset.lookup` is an application-specific placeholder. The provider is an interface; this version does not automatically instantiate or persist a provider.
+`dataset.lookup` is an application-specific placeholder. ReMgu does not prescribe or persist a provider. For exports, you can inject an instance into `ResearchSnapshotBuilder` and opt into short descriptions; this keeps the publication adapters snapshot-only:
+
+```python
+from remgu import ResearchSnapshotBuilder, StaticSiteAdapter
+
+provider = MyExampleProvider()  # configured by your application
+snapshot = ResearchSnapshotBuilder(
+    ".research", example_provider=provider, describe_examples=True
+).build()
+StaticSiteAdapter().export(snapshot, "site")
+```
+
+Descriptions are added only to the in-memory snapshot and are not written back to `samples.jsonl`. `describe()` should be cheap and concise; it should not load a large sample or run model inference.
 
 ## Lifecycle and exceptions
 

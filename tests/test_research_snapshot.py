@@ -11,6 +11,7 @@ from pathlib import Path
 
 from remgu import ArchiveAdapter, Experiment, ResearchSnapshotBuilder
 from remgu.models import Motivation
+from remgu.publication import MarkdownAdapter
 
 
 class TestResearchSnapshot(unittest.TestCase):
@@ -76,6 +77,30 @@ class TestResearchSnapshot(unittest.TestCase):
         self.assertEqual(snapshot.summary.aborted, 1)
         self.assertEqual(snapshot.summary.failed, 1)
         self.assertEqual(snapshot.summary.completed, 0)
+
+    def test_example_descriptions_are_optional_snapshot_enrichment(self) -> None:
+        """Attach provider descriptions to reports without changing persisted samples."""
+        self._completed_run("H1", Motivation(type="new"))
+
+        class Provider:
+            def describe(self, example_id: str) -> str:
+                return f"User-item interaction for {example_id}"
+
+            def get(self, example_id: str):
+                return {"id": example_id}
+
+        with self.assertRaisesRegex(ValueError, "requires an example_provider"):
+            ResearchSnapshotBuilder(self.base, describe_examples=True)
+
+        snapshot = ResearchSnapshotBuilder(
+            self.base, example_provider=Provider(), describe_examples=True
+        ).build()
+        self.assertEqual(snapshot.samples[0]["description"], "User-item interaction for node-42")
+        report = MarkdownAdapter().render(snapshot)
+        self.assertIn("**Description:** User-item interaction for node-42", report)
+
+        plain_snapshot = ResearchSnapshotBuilder(self.base).build()
+        self.assertNotIn("description", plain_snapshot.samples[0])
 
     def test_snapshot_does_not_modify_source_files(self) -> None:
         """Ensure snapshot construction leaves source files byte-for-byte unchanged."""

@@ -158,6 +158,9 @@ class StaticSiteAdapter:
         body.extend(["</section><section><h2>Collected examples</h2>"])
         if run_samples:
             for sample in run_samples:
+                description = sample.get("description")
+                if isinstance(description, str) and description.strip():
+                    body.append(f'<p class="example-description"><strong>Description:</strong> {self._text(description.strip())}</p>')
                 body.append(f"<pre><code>{self._text(self._json(sample))}</code></pre>")
         else:
             body.append("<p>No compact diagnostic examples recorded.</p>")
@@ -176,7 +179,11 @@ class StaticSiteAdapter:
                 "<p>These are compact diagnostic records, not source datasets or serialized domain objects.</p>"]
         if snapshot.samples:
             for index, sample in enumerate(snapshot.samples, start=1):
-                body.append(f"<section><h2>Example {index}</h2><pre><code>{self._text(self._json(sample))}</code></pre></section>")
+                body.append(f"<section><h2>Example {index}</h2>")
+                description = sample.get("description")
+                if isinstance(description, str) and description.strip():
+                    body.append(f'<p class="example-description"><strong>Description:</strong> {self._text(description.strip())}</p>')
+                body.append(f"<pre><code>{self._text(self._json(sample))}</code></pre></section>")
         else:
             body.append("<p>No compact diagnostic examples have been collected.</p>")
         body.append("</main>")

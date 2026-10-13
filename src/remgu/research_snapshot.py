@@ -7,6 +7,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
 
+from remgu.example.example_provider import ExampleProvider
+
 from remgu.consistency import ConsistencyIssue
 
 
@@ -88,12 +90,24 @@ class ResearchSnapshot:
 class ResearchSnapshotBuilder:
     """Build an in-memory snapshot from the existing .research store."""
 
-    def __init__(self, base_path: str = ".research") -> None:
+    def __init__(
+        self,
+        base_path: str = ".research",
+        example_provider: ExampleProvider | None = None,
+        describe_examples: bool = False,
+    ) -> None:
         """Create a snapshot builder for a research directory.
 
         Args:
             base_path: Root directory containing the persisted research data.
+            example_provider: Optional domain-specific provider used to describe sample IDs.
+            describe_examples: Whether to enrich snapshot samples with provider descriptions.
+                Requires ``example_provider`` when enabled.
         """
+        if describe_examples and example_provider is None:
+            raise ValueError("describe_examples=True requires an example_provider")
+        self.example_provider = example_provider
+        self.describe_examples = describe_examples
         from remgu.file_storage import FileStorage
         from remgu.consistency import ResearchChecker
 
@@ -122,12 +136,30 @@ class ResearchSnapshotBuilder:
             for row in run.metrics:
                 metrics.append({"run_id": run_id, **row})
             for sample in run.samples:
-                samples.append({"run_id": run_id, **sample})
+                samples.append({"run_id": run_id, **self._describe_sample(sample)})
 
         summary_text = self._summary_text(summary)
         return ResearchSnapshot(summary=summary, runs=runs, relations=relations,
                                 metrics=metrics, samples=samples,
                                 findings=findings_report.issues, summary_text=summary_text)
+
+    def _describe_sample(self, sample: dict[str, Any]) -> dict[str, Any]:
+        """Optionally attach a cheap, human-readable description to a sample.
+
+        The enrichment exists only in the in-memory snapshot; persisted sample
+        records are never modified. Provider errors propagate so a requested
+        description export cannot silently omit descriptions.
+        """
+        enriched = dict(sample)
+        if not self.describe_examples or self.example_provider is None:
+            return enriched
+        example_id = enriched.get("example_id")
+        if not isinstance(example_id, str) or not example_id.strip():
+            return enriched
+        description = self.example_provider.describe(example_id)
+        if isinstance(description, str) and description.strip():
+            enriched["description"] = description.strip()
+        return enriched
 
     def _build_run(self, run_id: str) -> ResearchSnapshotRun:
         """Build one derived run view from persisted run and artifact files.

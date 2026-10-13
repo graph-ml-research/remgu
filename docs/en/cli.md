@@ -142,3 +142,15 @@ research export site --output ./reports/site
 ```
 
 The command builds a `ResearchSnapshot` and generates a static HTML site with `index.html`, one page per run under `runs/`, an examples catalogue under `examples/`, and a shared `style.css`. It uses no backend, framework, or JavaScript. The destination directory must not already exist. The output can be opened locally or hosted later on a static hosting service; deployment is not part of ReMgu. See [Static site export](static-site.md).
+
+### Optional example descriptions
+
+Both Markdown and site export can enrich compact examples through an application-provided `ExampleProvider`:
+
+```bash
+research export site --describe-examples --example-provider my_project.examples:MyExampleProvider
+research export markdown --describe-examples --example-provider my_project.examples:MyExampleProvider
+```
+
+The provider class must be importable and constructible without arguments; configure it from environment/configuration in its constructor. `describe(example_id)` should be cheap and concise. Descriptions are transient snapshot fields, not changes to stored `samples.jsonl`. If no provider is supplied, exports keep the original compact records.
+

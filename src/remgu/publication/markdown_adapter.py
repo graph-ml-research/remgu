@@ -81,7 +81,11 @@ class MarkdownAdapter:
             for index, sample in enumerate(snapshot.samples, start=1):
                 run_id = sample.get("run_id")
                 title = f"Sample {index}" + (f" — {run_id}" if run_id else "")
-                lines.extend([f"### {self._inline(title)}", "", "````json", self._json(sample), "````", ""])
+                lines.extend([f"### {self._inline(title)}", ""])
+                description = sample.get("description")
+                if isinstance(description, str) and description.strip():
+                    lines.extend([f"**Description:** {self._inline(description.strip())}", ""])
+                lines.extend(["````json", self._json(sample), "````", ""])
         else:
             lines.append("No compact diagnostic samples were collected.")
 

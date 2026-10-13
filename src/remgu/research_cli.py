@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib
 from datetime import datetime
 from pathlib import Path
 from typing import Sequence
@@ -68,9 +69,15 @@ class ResearchCli:
         export_subparsers = export.add_subparsers(dest="export_format", required=True)
         markdown = export_subparsers.add_parser("markdown")
         markdown.add_argument("--output", default="research.md")
+        markdown.add_argument("--describe-examples", action="store_true",
+                              help="Add short descriptions via an ExampleProvider")
+        markdown.add_argument("--example-provider", help="Import path module:Class for an ExampleProvider")
         markdown.set_defaults(func=self._cmd_export_markdown)
         site = export_subparsers.add_parser("site")
         site.add_argument("--output", default="site")
+        site.add_argument("--describe-examples", action="store_true",
+                          help="Add short descriptions via an ExampleProvider")
+        site.add_argument("--example-provider", help="Import path module:Class for an ExampleProvider")
         site.set_defaults(func=self._cmd_export_site)
         previous = subparsers.add_parser("previous")
         previous.add_argument("--limit", type=int, default=5)
@@ -229,13 +236,41 @@ class ResearchCli:
         print(output)
         return 0
 
+    def _snapshot_for_export(self, args: argparse.Namespace):
+        """Build an export snapshot, optionally enriching examples via a provider.
+
+        Provider classes are loaded only when description enrichment is explicitly
+        requested. The expected import syntax is ``package.module:ProviderClass``.
+        """
+        describe = bool(getattr(args, "describe_examples", False))
+        provider_path = getattr(args, "example_provider", None)
+        if not describe:
+            if provider_path:
+                raise SystemExit("--example-provider requires --describe-examples")
+            return ResearchSnapshotBuilder(args.base_path).build()
+        if not provider_path or ":" not in provider_path:
+            raise SystemExit("--describe-examples requires --example-provider package.module:ProviderClass")
+        module_name, class_name = provider_path.split(":", 1)
+        if not module_name or not class_name:
+            raise SystemExit("--example-provider must use package.module:ProviderClass")
+        try:
+            provider_class = getattr(importlib.import_module(module_name), class_name)
+            provider = provider_class()
+        except (ImportError, AttributeError, TypeError) as exc:
+            raise SystemExit(f"Cannot initialize example provider {provider_path}: {exc}") from exc
+        if not callable(getattr(provider, "describe", None)):
+            raise SystemExit(f"Example provider {provider_path} has no callable describe(example_id)")
+        return ResearchSnapshotBuilder(
+            args.base_path, example_provider=provider, describe_examples=True
+        ).build()
+
     def _cmd_export_markdown(self, args: argparse.Namespace) -> int:
         """Publish the current research snapshot as a standalone Markdown file.
 
         Args:
             args: Parsed Markdown export arguments, including ``output``.
         """
-        snapshot = ResearchSnapshotBuilder(args.base_path).build()
+        snapshot = self._snapshot_for_export(args)
         try:
             output = MarkdownAdapter().export(snapshot, args.output)
         except FileExistsError as exc:
@@ -253,7 +288,7 @@ class ResearchCli:
         destination = Path(args.output).resolve()
         if destination == research_root or research_root in destination.parents:
             raise SystemExit("Static site output must be outside the research data directory")
-        snapshot = ResearchSnapshotBuilder(args.base_path).build()
+        snapshot = self._snapshot_for_export(args)
         try:
             output = StaticSiteAdapter().export(snapshot, args.output)
         except FileExistsError as exc:

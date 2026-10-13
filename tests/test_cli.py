@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import contextlib
 import io
+import importlib
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -13,6 +15,8 @@ from typing import Any
 import yaml
 
 from remgu.research_cli import main
+from remgu import Experiment
+from remgu.models import Motivation
 
 
 class TestResearchCli(unittest.TestCase):
@@ -187,6 +191,37 @@ class TestResearchPublicationCli(unittest.TestCase):
         code, output = self.run_cli("archive", "--output", str(Path(self._temporary_directory.name) / "out.zip"))
         self.assertEqual(code, 0)
         self.assertTrue(Path(output.strip()).exists())
+
+    def test_site_cli_can_enrich_examples_with_importable_provider(self) -> None:
+        """Load an application provider only when description enrichment is requested."""
+        experiment = Experiment("graph-mamba", self.base)
+        with experiment.run("H1", Motivation(type="new")) as run:
+            run.collect({"example_id": "node-42", "score": 0.91})
+
+        provider_dir = Path(self._temporary_directory.name) / "provider"
+        provider_dir.mkdir()
+        (provider_dir / "fixture_provider.py").write_text(
+            """class Provider:
+    def get(self, example_id): return {"id": example_id}
+    def describe(self, example_id): return f"Fixture description for {example_id}"
+""",
+            encoding="utf-8",
+        )
+        sys.path.insert(0, str(provider_dir))
+        importlib.invalidate_caches()
+        try:
+            output = Path(self._temporary_directory.name) / "site"
+            code, _ = self.run_cli(
+                "export", "site", "--output", str(output),
+                "--describe-examples", "--example-provider", "fixture_provider:Provider",
+            )
+        finally:
+            sys.path.remove(str(provider_dir))
+            sys.modules.pop("fixture_provider", None)
+            importlib.invalidate_caches()
+        self.assertEqual(code, 0)
+        page = (output / "examples" / "index.html").read_text(encoding="utf-8")
+        self.assertIn("Fixture description for node-42", page)
 
     def test_export_markdown_cli_creates_requested_output(self) -> None:
         """Export the empty snapshot as a standalone Markdown document."""

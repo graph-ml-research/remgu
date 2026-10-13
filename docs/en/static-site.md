@@ -27,7 +27,7 @@ site/
     └── index.html
 ```
 
-The home page contains run counts, chronological research history, recorded conclusions and next steps, and consistency findings. Each run page contains its hypothesis, motivation/reference, execution and review state, timestamps, parameters, metrics, and compact samples. The examples page lists compact diagnostic records only.
+The home page contains run counts, chronological research history, recorded conclusions and next steps, and consistency findings. Each run page contains its hypothesis, motivation/reference, execution and review state, timestamps, parameters, metrics, and compact samples. If the snapshot was built with an `ExampleProvider` and `describe_examples=True`, a short human-readable description appears before each sample record.
 
 ## Architecture and guarantees
 

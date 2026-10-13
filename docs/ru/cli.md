@@ -141,3 +141,15 @@ research export site --output ./reports/site
 ```
 
 Команда строит `ResearchSnapshot` и генерирует статический HTML-сайт: `index.html`, отдельную страницу каждого запуска в `runs/`, каталог примеров в `examples/` и общий `style.css`. Backend, JavaScript-фреймворк и JavaScript не требуются. Каталог назначения не должен существовать заранее. Сайт можно открыть локально или позднее разместить на статическом хостинге; deployment в ReMgu не входит. См. [Экспорт статического сайта](static-site.md).
+
+### Краткие описания примеров
+
+Markdown-отчёт и статический сайт можно дополнить описаниями через `ExampleProvider` конкретного приложения:
+
+```bash
+research export site --describe-examples --example-provider my_project.examples:MyExampleProvider
+research export markdown --describe-examples --example-provider my_project.examples:MyExampleProvider
+```
+
+Класс provider должен импортироваться по указанному пути и создаваться без аргументов; нужную конфигурацию можно читать в конструкторе из окружения или конфигурационных файлов. `describe(example_id)` должен быть дешёвым и кратким. Описания существуют только в snapshot и не меняют `samples.jsonl`. Без provider экспорт сохраняет исходные компактные записи.
+
