@@ -1,0 +1,9 @@
+title: ReMgu
+description: Experiment lifecycle management for reproducible ML research
+theme: jekyll-theme-cayman
+show_downloads: false
+# docs/_config.yml
+plugins:
+  - jekyll-relative-links
+# Включаем красивые URL без .html (тогда плагин сделает ссылки вида /en/cli/)
+permalink: pretty
