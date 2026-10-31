@@ -19,14 +19,14 @@ jobs:
       # Единственное действие: копируем README в docs
       - name: Prepare Docs
         run: |
-          # 1. Копируем README, но сразу заменяем ссылки вида "docs/en/cli.md" на "en/cli.md"
-          # Это нужно, потому что jekyll-relative-links не видит файлы за пределами папки docs/
+          # Для английского README: заменяем "docs/" на "/" в ссылках
           sed 's|](docs/|](/|g' README.md > docs/index.md
           
-          # 2. Если нужен русский README, делаем то же самое для него
-          if [ -f README.ru.md ]; then
-            sed 's|](docs/|](/|g' README.ru.md > docs/README.ru.md
-          fi
+          # Для русского README:
+          # 1. Заменяем "docs/" на "/" в ссылках
+          # 2. Сохраняем в файл docs/ru.md (или docs/ru/index.md, если создашь папку)
+          mkdir -p docs/ru
+          sed 's|](docs/|](/|g' README.ru.md > docs/ru/index.md
           
       - name: Setup Pages
         uses: actions/configure-pages@v5
