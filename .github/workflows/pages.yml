@@ -2,19 +2,12 @@ name: Deploy Docs to GitHub Pages
 
 on:
   push:
-    branches: ["main"] # Запускать при пуше в main
-  workflow_dispatch: # Позволяет запустить вручную из вкладки Actions
+    branches: ["main"]
 
-# Права, необходимые для деплоя на Pages
 permissions:
   contents: read
   pages: write
   id-token: write
-
-# Разрешаем только один одновременный деплой
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
 
 jobs:
   build-and-deploy:
@@ -23,40 +16,54 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # ШАГ 1: Решаем проблему симлинков
-      # GitHub Pages не понимает симлинки за пределами папки docs.
-      # Мы копируем содержимое README в docs/index.md прямо в раннере.
-      - name: Materialize README for Docs
+      - name: Prepare Site (Copy docs and create redirects)
         run: |
-          # Копируем содержимое корневого README.md в docs/index.md
-          cp README.md docs/index.md
-          # Если нужен русский README на сайте, раскомментируй строку ниже:
-          cp README.ru.md docs/README.ru.md
+          # Копируем папку docs в отдельную папку site
+          cp -r docs site
+          
+          # Копируем README в site (чтобы была главная)
+          cp README.md site/index.md
+          
+          # Создаем .nojekyll, чтобы GitHub Pages не вмешивался
+          touch site/.nojekyll
+          
+          # МАГИЯ: Создаем HTML-редиректы для всех .md файлов
+          # Если ссылка ведет на site/en/cli.md, мы создаем файл site/en/cli.md/index.html
+          find site -name "*.md" ! -name "index.md" | while read file; do
+            # Получаем путь без .md (например, site/en/cli)
+            base="${file%.md}"
+            # Создаем директорию с таким же именем, как файл (например, site/en/cli.md/)
+            mkdir -p "${base}.md"
+            # Создаем index.html внутри, который просто отдает контент файла
+            cat > "${base}.md/index.html" <<EOF
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+          </head>
+          <body>
+            <div id="content"></div>
+            <script>
+              fetch('$file'.replace('.md', '.md')) // Загружаем исходный .md файл
+                .then(response => response.text())
+                .then(text => {
+                  document.getElementById('content').innerHTML = marked.parse(text);
+                });
+            </script>
+          </body>
+          </html>
+          EOF
+          done
 
-      # ШАГ 2: Сборка и деплой (используем официальный экшен GitHub)
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      - name: Build with Jekyll
-        uses: actions/jekyll-build-pages@v1
-        with:
-          source: ./docs # Указываем, что сайт живет в папке docs
-          destination: ./_site
-
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
+        with:
+          path: './site'
 
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
-      - name: Create HTML stubs for Markdown links
-        run: |
-          # Находим все .md файлы в docs (кроме index.md, который уже есть)
-          # и создаем рядом с ними .html файлы, которые просто перенаправляют на сгенерированную Jekyll страницу
-          find docs -name "*.md" ! -name "index.md" | while read file; do
-            # Получаем путь без .md
-            base="${file%.md}"
-            # Создаем HTML-заглушку, которая перенаправляет на правильный URL Jekyll (без .html)
-            echo "<meta http-equiv=\"refresh\" content=\"0; url='/${base#docs/}/'\">" > "${base}.html"
-          done
