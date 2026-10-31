@@ -49,3 +49,14 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Create HTML stubs for Markdown links
+        run: |
+          # Находим все .md файлы в docs (кроме index.md, который уже есть)
+          # и создаем рядом с ними .html файлы, которые просто перенаправляют на сгенерированную Jekyll страницу
+          find docs -name "*.md" ! -name "index.md" | while read file; do
+            # Получаем путь без .md
+            base="${file%.md}"
+            # Создаем HTML-заглушку, которая перенаправляет на правильный URL Jekyll (без .html)
+            echo "<meta http-equiv=\"refresh\" content=\"0; url='/${base#docs/}/'\">" > "${base}.html"
+          done
