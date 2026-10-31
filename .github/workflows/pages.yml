@@ -21,33 +21,51 @@ jobs:
           # Копируем папку docs в отдельную папку site
           cp -r docs site
           
-          # Копируем README в site (чтобы была главная)
-          cp README.md site/index.md
-          
           # Создаем .nojekyll, чтобы GitHub Pages не вмешивался
           touch site/.nojekyll
           
-          # МАГИЯ: Создаем HTML-редиректы для всех .md файлов
-          find site -name "*.md" ! -name "index.md" | while read file; do
-            # Получаем путь без .md (например, site/en/cli)
+          # 1. ФИКС ГЛАВНОЙ СТРАНИЦЫ: 
+          # Вместо index.md создаем index.html, который загрузит README.md
+          # (предварительно скопировав README.md в папку site)
+          cp README.md site/README.md
+          cat > site/index.html <<EOF
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+            <style>body { max-width: 800px; margin: 40px auto; font-family: sans-serif; line-height: 1.6; }</style>
+          </head>
+          <body>
+            <div id="content"></div>
+            <script>
+              fetch('README.md')
+                .then(response => response.text())
+                .then(text => {
+                  document.getElementById('content').innerHTML = marked.parse(text);
+                });
+            </script>
+          </body>
+          </html>
+          EOF
+          
+          # 2. ФИКС ОСТАЛЬНЫХ ССЫЛОК (.md)
+          find site -name "*.md" ! -name "index.md" ! -name "README.md" | while read file; do
             base="${file%.md}"
-            
-            # Создаем папку с таким же именем, как файл, но БЕЗ .md
-            # И проверяем, не существует ли она уже
             mkdir -p "$base"
             
-            # Создаем index.html внутри, который просто отдает контент файла
             cat > "$base/index.html" <<EOF
           <!DOCTYPE html>
           <html>
           <head>
             <meta charset="utf-8">
             <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+            <style>body { max-width: 800px; margin: 40px auto; font-family: sans-serif; line-height: 1.6; }</style>
           </head>
           <body>
             <div id="content"></div>
             <script>
-              fetch('$(basename "$file")') // Загружаем исходный .md файл
+              fetch('$(basename "$file")')
                 .then(response => response.text())
                 .then(text => {
                   document.getElementById('content').innerHTML = marked.parse(text);
