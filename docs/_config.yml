@@ -1,0 +1,11 @@
+# docs/_config.yml
+
+# Включаем обработку всех Markdown-файлов, даже если в них нет front matter
+include:
+  - "*.md"
+
+# Настраиваем «красивые» URL (без .html на конце)
+permalink: pretty
+
+# (Опционально) Явно указываем, что это Markdown
+markdown: kramdown
