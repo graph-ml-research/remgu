@@ -1,0 +1,51 @@
+name: Deploy Docs to GitHub Pages
+
+on:
+  push:
+    branches: ["main"] # Запускать при пуше в main
+  workflow_dispatch: # Позволяет запустить вручную из вкладки Actions
+
+# Права, необходимые для деплоя на Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Разрешаем только один одновременный деплой
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ШАГ 1: Решаем проблему симлинков
+      # GitHub Pages не понимает симлинки за пределами папки docs.
+      # Мы копируем содержимое README в docs/index.md прямо в раннере.
+      - name: Materialize README for Docs
+        run: |
+          # Копируем содержимое корневого README.md в docs/index.md
+          cp README.md docs/index.md
+          # Если нужен русский README на сайте, раскомментируй строку ниже:
+          cp README.ru.md docs/README.ru.md
+
+      # ШАГ 2: Сборка и деплой (используем официальный экшен GitHub)
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Build with Jekyll
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./docs # Указываем, что сайт живет в папке docs
+          destination: ./_site
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
