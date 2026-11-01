@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "remgu"
-version = "0.2.0"
+version = "0.2.1"
 description = "Experiment lifecycle management for reproducible ML research"
 readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.10"
@@ -26,10 +26,9 @@ classifiers = [
 dependencies = ["PyYAML>=6.0"]
 
 [project.urls]
-Homepage = "https://github.com/graph-ml-research/remgu"
 Repository = "https://github.com/graph-ml-research/remgu"
 Issues = "https://github.com/graph-ml-research/remgu/issues"
-Documentation = "https://github.com/graph-ml-research/remgu#readme"
+Documentation = "https://graph-ml-research.github.io/remgu"
 
 [project.scripts]
 research = "remgu.research_cli:main"
