@@ -16,22 +16,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Единственное действие: копируем README в docs
       - name: Prepare Docs
         run: |
-          # Для английского README: заменяем "docs/" на "/" в ссылках
+          # English version: strip "docs/" prefix and point Russian link to "ru/"
           sed 's|](docs/|](|g' README.md | sed 's|README\.ru\.md|ru/|g' > docs/index.md
           
-          # 2. Русская версия (docs/ru/index.md)
-          # Сначала обрабатываем обычные ссылки на файлы (.md -> ./file.md)
+          # 2. Russian version: strip "docs/ru/" prefix and make links relative (./file.md)
           sed -e 's|](docs/ru/|](|g' \
               -e 's|](\([a-zA-Z0-9_-]*\.md\)|](\./\1|g' README.ru.md > docs/ru/index.md
               
-          # А теперь жестко правим ссылку переключения языка на главную
-          # Ищем текст "](README.md)" и меняем его на "](../)"
-          sed -i 's|](README\.md)|](../)|g' docs/ru/index.md
-          
-          # Точечная замена шапки
+          # Fix language switcher in Russian README using Python
+          # This reliably replaces the exact string and avoids sed escaping issues
           python -c "
           import pathlib
           p = pathlib.Path('docs/ru/index.md')
