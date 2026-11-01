@@ -20,11 +20,11 @@ jobs:
       - name: Prepare Docs
         run: |
           # Для английского README: заменяем "docs/" на "/" в ссылках
-          sed 's|](docs/|](/|g' README.md | sed 's|README\.ru\.md|/ru/|g' > docs/index.md
+          sed 's|](docs/|](|g' README.md | sed 's|README\.ru\.md|ru/|g' > docs/index.md
           
           # 2. Русская версия (docs/ru/index.md)
           mkdir -p docs/ru
-          sed 's|](docs/|](/|g' README.ru.md | sed 's|README\.md|/|g' > docs/ru/index.md
+          sed 's|](docs/|](../|g' README.ru.md | sed 's|](README\.md)|](../)|g' > docs/ru/index.md
           
       - name: Setup Pages
         uses: actions/configure-pages@v5
