@@ -31,8 +31,10 @@ jobs:
           # Ищем текст "](README.md)" и меняем его на "](../)"
           sed -i 's|](README\.md)|](../)|g' docs/ru/index.md
           
-          # если в шапке написано просто "English" со ссылкой без скобок
-          sed -i 's|href="README.md"|href="../"|g' docs/ru/index.md
+          # Точечная замена шапки
+          # Ищем ровно "[English](README.md) | **Русский**" и
+          # меняем на "[English](../) | **Русский**"
+          sed -i 's|\[English\](README\.md) \| \*\*Русский\*\*|[English](../) \| **Русский**|g' docs/ru/index.md
           
       - name: Setup Pages
         uses: actions/configure-pages@v5
