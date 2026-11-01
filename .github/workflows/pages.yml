@@ -24,7 +24,7 @@ jobs:
           
           # 2. Русская версия (docs/ru/index.md)
           mkdir -p docs/ru
-          sed 's|](docs/|](../|g' README.ru.md | sed 's|](README\.md)|](../)|g' > docs/ru/index.md
+          sed 's|](docs/ru/|](|g' README.ru.md | sed 's|](README\.md)|](../)|g' > docs/ru/index.md
           
       - name: Setup Pages
         uses: actions/configure-pages@v5
