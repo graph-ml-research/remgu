@@ -7,3 +7,9 @@ from .example_selector import ExampleSelector
 from .top_k_selector import TopKSelector
 
 __all__ = ["ExampleProvider", "ExampleSelector", "TopKSelector"]
+from .example_selection_service import ExampleSelectionService
+from .synthetic_example_generator import SyntheticExampleGenerator
+__all__ += ["ExampleSelectionService", "SyntheticExampleGenerator"]
+
+from .example_report_selector import ExampleReportSelector
+__all__ += ["ExampleReportSelector"]

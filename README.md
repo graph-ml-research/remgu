@@ -6,7 +6,7 @@ Experiment lifecycle management for reproducible ML research.
 
 ReMgu connects a research hypothesis to a concrete run, its metrics and diagnostic examples, and a written conclusion with the next step. It stores this record as ordinary files in `.research/`, so the history can be inspected, versioned, and reviewed without a tracking server.
 
-> **Current scope:** run lifecycle, parameters, metrics, diagnostic samples, and read-only consistency checks. Knowledge-base management and agent workflows are not implemented in this version. Research snapshots, ZIP archives, Markdown exports, and static HTML sites are available through `research update`, `research archive`, `research export markdown`, and `research export site`.
+> **Current scope:** run lifecycle, parameters, metrics, diagnostic samples, read-only consistency checks, controlled graph simulations, offline HTML reports, and an optional local live dashboard. Knowledge-base management and agent workflows are not implemented. Research snapshots, ZIP archives, Markdown exports, and static HTML sites are available through `research update`, `research archive`, `research export markdown`, and `research export site`.
 
 ## Start here
 
@@ -21,6 +21,7 @@ ReMgu connects a research hypothesis to a concrete run, its metrics and diagnost
 | Build an in-memory research snapshot | CLI / API | [Research Snapshot](docs/en/research-snapshot.md) |
 | Create a self-contained ZIP for a supervisor | CLI | [Research archive](docs/en/archive.md) |
 | Publish a static HTML site | CLI | [Static site export](docs/en/static-site.md) |
+| Run a controlled graph-dependency simulation and generate a report | CLI / Python API | [Simulation API](docs/en/simulation.md) |
 | Understand the files ReMgu creates | Reference | [On-disk format](docs/en/data-format.md) |
 
 ## The research loop
@@ -143,6 +144,7 @@ The CLI defaults to `.research/`. Pass `--base-path /path/to/research-data` befo
 
 ```python
 from remgu import Experiment, Motivation, Run, ExampleProvider, TopKSelector
+from remgu import SimulationExperiment, SimulationConfig, RemoveEdgeOperator
 ```
 
 - `Experiment` opens the active run or creates one programmatically.
@@ -151,6 +153,7 @@ from remgu import Experiment, Motivation, Run, ExampleProvider, TopKSelector
 - `TopKSelector` keeps the highest- or lowest-scoring diagnostic records in bounded memory.
 - `ExampleSelector` merges named selection criteria and annotates why each example was selected.
 - `ExampleProvider` defines how a stored example ID can be resolved to source data and a readable description.
+- `SimulationExperiment` runs a controlled synthetic experiment; `SimulationConfig` fixes its settings and seed, while graph operators make explicit interventions.
 
 See the [API guide](docs/en/python-api.md) for signatures and complete examples.
 
@@ -173,14 +176,27 @@ See the [API guide](docs/en/python-api.md) for signatures and complete examples.
 - [Static site export](docs/en/static-site.md)
 - [On-disk data format](docs/en/data-format.md)
 - [Architecture and boundaries](docs/en/architecture.md)
+- [Controlled simulation API](docs/en/simulation.md)
 - [Russian documentation](README.ru.md)
 
 ## Development status
 
-ReMgu is an evolving research tool. The current implementation is intentionally file-based and small. The documentation describes the implementation in this repository; future knowledge management, site generation, and agent features remain out of scope until implemented.
+ReMgu is an evolving research tool. The current implementation is intentionally file-based and small. The dependency-free simulation package supports a basic graph-dependency scenario, graph interventions, reproducible transforms, and optional diagnostic contracts. Browser visualization, offline HTML reports, SSE live dashboard, bounded example selection, resource monitoring extras, and optional framework architecture adapters are available. The DOT renderer intentionally supports a safe subset of Graphviz.
 
 ## Attribution and license
 
 Copyright 2026 Mstislav Maslennikov. Developed and maintained by Mstislav Maslennikov. Licensed under [Apache License 2.0](LICENSE).
 
 Originally developed to support research work of students at the Open Information Technologies Laboratory, Faculty of Computational Mathematics and Cybernetics, Lomonosov Moscow State University. It is maintained as an independent research software project.
+
+## Simulation, reports, and dashboard
+
+The simulator can be used from Python or from the `research` command. The report is a standalone HTML file; the live dashboard is a local-only server.
+
+```bash
+research simulation run --seed 7 --nodes-per-community 8 --output run.json
+research simulation report run.json --output report.html
+research simulation dashboard run.json --port 8765
+```
+
+Python API: `from remgu import SimulationExperiment, SimulationConfig, StaticHtmlReport, DashboardServer`. The CLI dashboard displays a saved result; for live training, publish metrics from the training loop through `DashboardServer.update_state()` and diagnostics through `publish_event()`. Install resource extras with `pip install "remgu[monitor]"`. Architecture detection only inspects frameworks already loaded in `sys.modules`; unsupported models return `None`. See [simulation and visualization guide](docs/en/simulation.md).

@@ -1,0 +1,71 @@
+# Copyright 2026 Mstislav Maslennikov
+# SPDX-License-Identifier: Apache-2.0
+"""Framework-neutral model architecture introspection and automatic adapter registry."""
+from __future__ import annotations
+
+import sys
+from typing import Any
+
+
+class ModelAdapter:
+    """Optional model-adapter contract for architecture visualization."""
+
+    def get_architecture_dot(self) -> str | None:
+        """Return a Graphviz DOT architecture or ``None`` when unsupported."""
+        return None
+
+
+class ArchitectureAdapter:
+    """Resolve a model's DOT description using its contract or loaded framework adapters.
+
+    Frameworks are detected only through ``sys.modules``: introspection never imports a
+    potentially large ML framework just to draw a diagram. All adapter failures degrade
+    to ``None`` because architecture visualization is optional.
+    """
+
+    def get_architecture_dot(self, model: object) -> str | None:
+        """Return a DOT string when a known adapter can describe ``model``; otherwise None."""
+        try:
+            getter = getattr(model, "get_architecture_dot", None)
+            if callable(getter):
+                result = getter()
+                if isinstance(result, str) and result.strip() and "graph" in result:
+                    return result
+                if result is None:
+                    return None
+
+            torch = sys.modules.get("torch")
+            if torch is not None:
+                nn = getattr(torch, "nn", None) or sys.modules.get("torch.nn")
+                module_type = getattr(nn, "Module", None)
+                if isinstance(module_type, type) and isinstance(model, module_type):
+                    from remgu.visualization.torch_architecture_adapter import TorchArchitectureAdapter
+                    result = TorchArchitectureAdapter().get_architecture_dot(model)
+                    if result:
+                        return result
+
+            tensorflow = sys.modules.get("tensorflow")
+            if tensorflow is not None:
+                keras = getattr(tensorflow, "keras", None)
+                utils = getattr(keras, "utils", None)
+                model_to_dot = getattr(utils, "model_to_dot", None)
+                if callable(model_to_dot) and self._is_keras_model(model, keras):
+                    graph = model_to_dot(model, show_shapes=True, show_layer_names=True)
+                    to_string = getattr(graph, "to_string", None)
+                    if callable(to_string):
+                        result = to_string()
+                        if isinstance(result, str) and result.strip():
+                            return result
+            return None
+        except Exception:
+            # Model tracing and optional framework metadata are not reliable for every model.
+            return None
+
+    def _is_keras_model(self, model: object, keras: Any) -> bool:
+        """Check the loaded Keras Model type without importing optional packages."""
+        models = getattr(keras, "Model", None)
+        if isinstance(models, type) and isinstance(model, models):
+            return True
+        models_module = getattr(keras, "models", None)
+        model_type = getattr(models_module, "Model", None)
+        return isinstance(model_type, type) and isinstance(model, model_type)

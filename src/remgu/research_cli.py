@@ -85,6 +85,23 @@ class ResearchCli:
         site.set_defaults(describe_examples=True)
         site.add_argument("--example-provider", help="Import path module:Class for an ExampleProvider")
         site.set_defaults(func=self._cmd_export_site)
+        simulation = subparsers.add_parser("simulation", help="Run and inspect controlled simulations")
+        simulation_subparsers = simulation.add_subparsers(dest="simulation_command", required=True)
+        simulation_run = simulation_subparsers.add_parser("run", help="Run a reproducible graph simulation")
+        simulation_run.add_argument("--output", default="simulation-result.json")
+        simulation_run.add_argument("--seed", type=int, default=0)
+        simulation_run.add_argument("--nodes-per-community", type=int, default=5)
+        simulation_run.add_argument("--edge-probability", type=float, default=0.6)
+        simulation_run.add_argument("--remove-bridge", action="store_true")
+        simulation_run.set_defaults(func=self._cmd_simulation_run)
+        simulation_report = simulation_subparsers.add_parser("report", help="Create an offline HTML report")
+        simulation_report.add_argument("input", help="Simulation result JSON")
+        simulation_report.add_argument("--output", default="simulation-report.html")
+        simulation_report.set_defaults(func=self._cmd_simulation_report)
+        simulation_dashboard = simulation_subparsers.add_parser("dashboard", help="Serve a local live dashboard")
+        simulation_dashboard.add_argument("input", help="Simulation result JSON")
+        simulation_dashboard.add_argument("--port", type=int, default=8765)
+        simulation_dashboard.set_defaults(func=self._cmd_simulation_dashboard)
         previous = subparsers.add_parser("previous")
         previous.add_argument("--limit", type=int, default=5)
         previous.set_defaults(func=self._cmd_previous)
@@ -317,6 +334,67 @@ class ResearchCli:
         print(f"run_id: {run.run_id}")
         print(f"execution.status: {run.execution.status}")
         print(f"review.status: {run.review.status}")
+        return 0
+
+    def _cmd_simulation_run(self, args: argparse.Namespace) -> int:
+        """Run a simulation and write its JSON result."""
+        import json
+        from remgu.simulation import SimulationConfig, SimulationExperiment, RemoveEdgeOperator
+        if args.nodes_per_community < 1:
+            raise SystemExit("--nodes-per-community must be positive")
+        config = SimulationConfig(seed=args.seed,
+                                  community_sizes=(args.nodes_per_community, args.nodes_per_community),
+                                  edge_probability=args.edge_probability,
+                                  critical_bridge=True)
+        operators = [RemoveEdgeOperator((args.nodes_per_community - 1, args.nodes_per_community))] if args.remove_bridge else []
+        result = SimulationExperiment(config).run(operators)
+        output = Path(args.output)
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(json.dumps(result.to_dict(), ensure_ascii=False, indent=2), encoding="utf-8")
+        print(output)
+        return 0 if result.status == "completed" else 1
+
+    def _cmd_simulation_report(self, args: argparse.Namespace) -> int:
+        """Create a self-contained HTML report from a saved simulation result."""
+        import json
+        from remgu.visualization import StaticHtmlReport
+        input_path = Path(args.input)
+        if not input_path.is_file():
+            raise SystemExit(f"Simulation result not found: {input_path}")
+        try:
+            result = json.loads(input_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise SystemExit(f"Cannot read simulation result: {exc}") from exc
+        output = StaticHtmlReport().render(result, args.output)
+        print(output)
+        return 0
+
+    def _cmd_simulation_dashboard(self, args: argparse.Namespace) -> int:
+        """Serve saved experiment state with best-effort live resource sampling."""
+        import json
+        import time
+        from remgu.dashboard import DashboardServer
+        from remgu.visualization import ResourceMonitor
+        input_path = Path(args.input)
+        if not input_path.is_file():
+            raise SystemExit(f"Simulation result not found: {input_path}")
+        try:
+            result = json.loads(input_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise SystemExit(f"Cannot read simulation result: {exc}") from exc
+        monitor = ResourceMonitor()
+        dashboard = DashboardServer({"experiment_id": result.get("experiment_id"),
+                                     "status": result.get("status"), "metrics": result.get("metrics", {}),
+                                     "world": result.get("world", {}),
+                                     "note": "The saved experiment is complete; live resource values describe this dashboard process."},
+                                    port=args.port)
+        print(dashboard.start(), flush=True)
+        try:
+            while True:
+                dashboard.update_state({"live_resources": monitor.sample()})
+                time.sleep(1.0)
+        except KeyboardInterrupt:
+            dashboard.stop()
         return 0
 
     def _cmd_previous(self, args: argparse.Namespace) -> int:
