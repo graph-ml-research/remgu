@@ -4,7 +4,9 @@
 from html import escape
 
 
-class SpacyPipelineArchitectureAdapter:
+from remgu.visualization.architecture_adapter import ArchitectureAdapter
+
+class SpacyPipelineArchitectureAdapter(ArchitectureAdapter):
     """Describe pipeline components as an ordered processing chain."""
 
     def get_architecture_dot(self, model: object) -> str | None:

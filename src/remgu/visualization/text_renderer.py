@@ -4,7 +4,9 @@
 from html import escape
 
 
-class TextRenderer:
+from remgu.visualization.renderer import Renderer
+
+class TextRenderer(Renderer):
     """Render untrusted text as escaped HTML."""
 
     def render(self, value: object, *, css_class: str = "remgu-text") -> str:

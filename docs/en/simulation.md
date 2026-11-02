@@ -84,58 +84,72 @@ The adapter records configuration and status in run parameters, metrics in `metr
 - `Probe` calls an adapter's optional `get_probe_data()` method. If the method is absent or returns `None`, the result explicitly says diagnostics are unavailable. It does not infer gradients or activations.
 - `ModelIntervener` supports an explicit temporary attribute replacement and restoration record. It is not a universal neural-network intervention engine.
 - The included baseline is a deliberately simple reachability rule, not a benchmark of modern GNN or Mamba architectures.
-- Optional reporting and visualization tools are available without mandatory ML dependencies: `StaticHtmlReport`, `GraphRenderer`, `MetricRenderer`, `ArchitectureAdapter`, and `DotSvgRenderer`. The local `DashboardServer` uses SSE and binds to loopback by default. Resource monitoring is best-effort; unavailable measurements are represented as unavailable, not zero. The built-in DOT renderer supports a limited subset of Graphviz syntax.
+- Reports and visualization are available without installing ML frameworks as mandatory dependencies. By default, the dashboard is accessible only on the local machine. When a resource cannot be measured or a model diagram cannot be built, ReMgu indicates that the data is unavailable; the built-in architecture renderer supports only part of Graphviz DOT syntax.
 
-## CLI: run, report, dashboard
+
+## Reports and dashboard: choose a scenario
+
+### 1. Run a hypothesis check and save the result
 
 ```bash
 research simulation run --seed 7 --nodes-per-community 8 --output result.json
 research simulation report result.json --output report.html
+```
+
+The first command runs an experiment with a fixed seed and saves its result. The second creates an HTML report that can be opened in a browser or shared. Keeping the seed fixed helps compare interventions without mixing their effects with random changes in the generated data.
+
+### 2. Inspect a saved result in the browser
+
+```bash
 research simulation dashboard result.json --port 8765
 ```
 
-The static report is an offline HTML file. `research simulation dashboard result.json` displays the **saved result** and does not attach to a running or completed training process. For live monitoring, pass `DashboardServer` into the training loop and call `update_state()` with current metrics/resources and `publish_event()` for logs; updates are streamed to the browser over SSE. The server binds to loopback by default. Press Ctrl+C to stop it.
+Open the local URL printed by the command. The page can show metric charts, available resource measurements, selected examples, and graph/model previews when the corresponding data is present. This command displays the saved `result.json`; it does not attach itself to a running training process.
 
-### Live training integration
+### 3. Watch your own training
+
+The shortest option is to decorate your training function. ReMgu starts the local dashboard, samples available resources in the background, and stops the server even if training raises an exception.
 
 ```python
 from remgu import DashboardServer
 
-dashboard = DashboardServer({"status": "running"})
-url = dashboard.start()
-try:
+dashboard = DashboardServer()
+
+@dashboard.track()
+def train():
+    print("Dashboard URL:", dashboard.url)
     for epoch in range(num_epochs):
         train_one_epoch()
-        dashboard.update_state({
-            "status": "running",
-            "main_metric_value": validation_accuracy,
-            "metrics": {"loss": loss, "accuracy": validation_accuracy},
-            "metric_history": {"loss": loss_history, "accuracy": accuracy_history},
-            "live_resources": resource_monitor.sample(),
-        })
-        dashboard.publish_event({"type": "log", "message": f"epoch={epoch}"})
-finally:
-    dashboard.stop()
+        dashboard.log_metrics(loss=loss, accuracy=validation_accuracy)
+
+train()
 ```
 
-The example is illustrative: `train_one_epoch`, metric variables, and `resource_monitor` belong to the caller's training loop.
+`train_one_epoch`, `loss`, and `validation_accuracy` are supplied by your own project. The only call needed to publish metrics is `log_metrics(...)`; you do not need to create a `ResourceMonitor`, assemble a state dictionary, or call `update_state()` yourself. Alternatively, use `with dashboard.run(): ...`; the server and resource sampling run inside the block and stop on exit. To provide metrics without calling `log_metrics`, pass a zero-argument `metrics` callback to `run()` or `track()`; it should return a dictionary of current values.
 
-## Selecting and generating examples
+### What the page shows
 
-```python
-from remgu import ExampleSelectionService, SyntheticExampleGenerator
+- **Metric chart** shows how loss, accuracy, and other numeric values change during training. Loss often goes down and accuracy often goes up, but interpret them together and use the appropriate validation data.
+- **CPU and RAM** show process load when the operating system permits measurement. GPU and VRAM appear when the relevant drivers and libraries are available. Missing measurements are shown as unavailable, not as zero.
+- **Selected examples** help reveal where the model makes mistakes or behaves unusually.
+- **Parameter slider** appears only for parameters that the experiment author explicitly connected to live control. This could be a learning rate; moving a slider does not automatically change an arbitrary Python variable. Parameters that require rebuilding the model or optimizer are marked as requiring a restart.
+- **Logs** show messages and diagnostic events published by the training code.
 
-records = [
-    {"example_id": "a", "correct": False, "confidence": 0.93},
-    {"example_id": "b", "correct": True, "confidence": 0.99},
-]
-selected = ExampleSelectionService().select(records, "confident_errors", limit=5)
-synthetic = SyntheticExampleGenerator().generate(4, seed=17)
+### Example selection strategies
+
+`ExampleSelectionService` supports `random` for a random sample; `top_k` for records with the largest `score` (or a different `score_key`); `errors` for incorrect predictions; `confident_errors` for incorrect predictions ranked from highest to lowest confidence; `correct_predictions` for correct predictions; `hard` for records with the largest `difficulty`; `rare_examples` for records with the smallest `frequency`; and `has_bridge` for records marked `has_bridge=True`.
+
+For example, `confidence=0.93` means 93% confidence. The `confident_errors` strategy does **not** impose a 90% cutoff: it ranks incorrect predictions by confidence, so an error at 0.93 appears before an error at 0.4. `correct_predictions` requires `correct`; `confident_errors` requires `correct` and `confidence`; `hard` requires `difficulty`; `rare_examples` requires numeric `frequency`; and `has_bridge` requires `has_bridge`. Missing required fields produce a clear error.
+
+### Enable CPU/RAM/GPU monitoring
+
+```bash
+pip install "remgu[monitor]"
 ```
 
-Selection strategies validate the metadata they need. HTML reports and the live dashboard retain at most 100 ranked examples and paginate 10 rows at a time; the original sample source is not modified. Synthetic examples remain in memory and do not modify `samples.jsonl`.
+This installation is optional; reports and the rest of the dashboard still work without it. Available measurements depend on the operating system, drivers, and installed libraries. By default, the dashboard listens only on your own computer.
 
-## Static reports and renderers
+### Additional Python tools
 
 ```python
 from remgu import StaticHtmlReport, GraphRenderer, MetricRenderer
@@ -145,38 +159,16 @@ dot_text = GraphRenderer().to_dot(world)
 metric_svg = MetricRenderer().render({"validation_accuracy": [0.61, 0.72, 0.79]})
 ```
 
-All user-provided text (logs, errors, labels, and table cells) is passed through `html.escape()` before insertion into HTML; browser values are assigned using `textContent`, never `innerHTML`. Resource data is best-effort: a missing CPU/GPU/RAM measurement is `None`/“not measured”, not zero. The report uses historical duration and observed peak memory when available; live usage belongs to the server dashboard.
+`StaticHtmlReport` creates a standalone report, `GraphRenderer` returns a graph description, and `MetricRenderer` creates an SVG chart from an existing metric history. These tools visualize supplied data; they do not train a model or calculate metrics on your behalf.
 
-## Model architecture DOT contract
+### Model architecture preview
 
 ```python
 from remgu import ArchitectureAdapter, DotSvgRenderer
 
-class MyModelAdapter:
-    def get_architecture_dot(self) -> str | None:
-        return 'digraph Model { input [label="Input"]; input -> encoder; encoder -> output; }'
-
-dot = ArchitectureAdapter().get_architecture_dot(MyModelAdapter())
+dot = ArchitectureAdapter().get_architecture_dot(model)
 if dot is not None:
     svg = DotSvgRenderer().render(dot)
 ```
 
-The adapter returns DOT **text**, not an image. `DotSvgRenderer` implements a small, dependency-free DOT subset; it is not a replacement for full Graphviz. Unsupported DOT is reported rather than silently misrendered. `easydot`/`viz.js` can be added as optional alternatives if their API, license, and offline behavior are verified.
-
-## Dashboard events and controls
-
-`DashboardServer` exposes `/api/state`, an SSE stream at `/events`, and a local dashboard page. Publish diagnostic records with `publish_event`; events with type/category `probe` appear in the dedicated Probe panel. `ExperimentController` only exposes explicitly registered hot parameters and lifecycle callbacks. Hot parameters use a range slider plus Apply, structural parameters are marked as requiring restart, and view parameters stay client-side. Server-side validation is mandatory. Install monitoring with `pip install "remgu[monitor]"`; it uses `psutil` and `pynvml`, and unavailable measurements are `None`.
-
-The built-in SVG renderers support bounded small/medium visualizations. `EmbeddingRenderer` draws already-projected 2D coordinates; it does not run PCA/t-SNE/UMAP. Projection and large-graph exploration remain the caller's responsibility. Framework-specific model introspection and gradients/activations are available only when an adapter explicitly implements them.
-
-### Framework-specific architecture adapters
-
-The optional adapters are duck-typed and do not import their target frameworks:
-
-- `TorchArchitectureAdapter` reads a `named_modules()` hierarchy.
-- `KerasArchitectureAdapter` shows the exposed `layers` collection in sequence order; it does not reconstruct arbitrary branched functional graphs.
-- `CatBoostArchitectureAdapter` draws a bounded ensemble overview and marks omitted trees; it does not render individual split structures.
-- `SpacyPipelineArchitectureAdapter` shows the ordered `pipe_names` chain.
-- `Word2VecArchitectureAdapter` shows a conceptual token → embedding lookup → vector flow, not a neural layer graph.
-
-Use `None` as the normal result when a model does not expose the required metadata. These adapters intentionally avoid framework imports and must not turn the corresponding packages into required dependencies.
+If a model is unsupported or does not expose enough metadata, the result is `None`. Adapters for PyTorch, Keras, CatBoost, spaCy, and Word2Vec use metadata already available on the object; they do not install or automatically import heavyweight ML frameworks. The diagram is an overview, not a guarantee that every internal computation is represented.

@@ -4,7 +4,9 @@
 from html import escape
 
 
-class KerasArchitectureAdapter:
+from remgu.visualization.architecture_adapter import ArchitectureAdapter
+
+class KerasArchitectureAdapter(ArchitectureAdapter):
     """Describe the exposed Keras layer order without importing TensorFlow/Keras."""
 
     def get_architecture_dot(self, model: object) -> str | None:

@@ -6,7 +6,9 @@ from html import escape
 import math
 
 
-class MetricRenderer:
+from remgu.visualization.renderer import Renderer
+
+class MetricRenderer(Renderer):
     """Create simple SVG line charts without third-party plotting dependencies."""
 
     def render(self, series: Mapping[str, Sequence[float | int | None]], *, width: int = 720, height: int = 260,

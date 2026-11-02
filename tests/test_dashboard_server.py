@@ -52,3 +52,12 @@ class TestDashboardServer(unittest.TestCase):
             self.assertEqual(applied, [('lr', 0.2)])
         finally:
             server.stop()
+
+    def test_run_context_starts_and_stops_dashboard_and_accepts_metrics(self):
+        server = DashboardServer(port=0)
+        with server.run(interval=0.02) as url:
+            self.assertTrue(url.startswith("http://127.0.0.1:"))
+            server.log_metrics(loss=0.4, accuracy=0.8)
+            self.assertEqual(server.snapshot()["state"]["metrics"]["loss"], 0.4)
+        self.assertIsNone(server._httpd)
+        self.assertEqual(server.state["status"], "completed")

@@ -5,7 +5,9 @@ from html import escape
 import re
 
 
-class ImageRenderer:
+from remgu.visualization.renderer import Renderer
+
+class ImageRenderer(Renderer):
     """Render a relative local image path or a base64 data image URI."""
     _DATA_URI = re.compile(r"^data:image/(png|jpeg|gif|webp|svg\+xml);base64,[A-Za-z0-9+/=\r\n]+$")
 

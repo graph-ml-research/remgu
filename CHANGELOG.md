@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.1
+
+- Made framework-specific architecture adapters inherit from `ArchitectureAdapter` and added a shared `Renderer` base class for visual renderers.
+- Added `DashboardServer.run()` and `@DashboardServer.track()` to manage the local dashboard and resource sampling automatically; added `log_metrics()` for concise metric updates.
+- Added `correct_predictions` and `rare_examples` selection strategies and documented all supported strategies with required fields.
+- Reworked the Russian and English simulator/dashboard guides around student scenarios, commands, expected page content, and interpretation rather than implementation details.
+- Moved the simulator/dashboard overview into the main README flow before documentation and license sections.
+
 ## 0.3.0
 
 - Added `ModelAdapter.get_architecture_dot()` and automatic best-effort detection for already-loaded PyTorch and TensorFlow/Keras modules; unsupported models return `None`.

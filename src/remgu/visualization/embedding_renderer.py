@@ -7,7 +7,9 @@ from collections.abc import Iterable, Mapping
 from itertools import islice
 
 
-class EmbeddingRenderer:
+from remgu.visualization.renderer import Renderer
+
+class EmbeddingRenderer(Renderer):
     """Draw bounded 2D points; projection/training remains the caller's responsibility."""
 
     def render(self, points: Iterable[Mapping[str, object]], *, max_points: int = 2000) -> str:

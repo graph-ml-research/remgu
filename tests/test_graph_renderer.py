@@ -8,3 +8,7 @@ class TestGraphRenderer(unittest.TestCase):
         self.assertIn('graph RemguGraph', renderer.to_dot(world))
         self.assertIn('0 -- 1', renderer.to_edge_list(world))
         self.assertIn('<svg', renderer.to_svg(world))
+
+    def test_graph_renderer_inherits_renderer_base(self):
+        from remgu import Renderer
+        self.assertIsInstance(GraphRenderer(), Renderer)

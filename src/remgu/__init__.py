@@ -53,13 +53,13 @@ __all__ += [
 ]
 
 from remgu.visualization import (
-    ArchitectureAdapter, ModelAdapter, DotSvgRenderer, GraphRenderer, ImageRenderer,
+    ArchitectureAdapter, ModelAdapter, Renderer, DotSvgRenderer, GraphRenderer, ImageRenderer,
     MetricRenderer, ResourceMonitor, StaticHtmlReport, TableRenderer, TextRenderer,
 )
 from remgu.dashboard import DashboardServer, ExperimentController
 
 __all__ += [
-    "ArchitectureAdapter", "ModelAdapter", "DotSvgRenderer", "GraphRenderer", "ImageRenderer",
+    "ArchitectureAdapter", "ModelAdapter", "Renderer", "DotSvgRenderer", "GraphRenderer", "ImageRenderer",
     "MetricRenderer", "ResourceMonitor", "StaticHtmlReport", "TableRenderer", "TextRenderer",
     "DashboardServer", "ExperimentController",
 ]

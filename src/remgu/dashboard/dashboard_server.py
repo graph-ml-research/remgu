@@ -6,6 +6,9 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import threading
 import time
+from contextlib import contextmanager
+from functools import wraps
+from collections.abc import Callable, Mapping
 from typing import Any
 from urllib.parse import urlparse
 
@@ -28,6 +31,82 @@ class DashboardServer:
         self._event_revision = 0
         self._httpd = None
         self._thread = None
+        self._tracking_thread = None
+        self._tracking_stop = threading.Event()
+        self._resource_monitor = None
+        self._metrics_provider = None
+        self.url = None
+
+    @contextmanager
+    def run(self, *, metrics: Callable[[], Mapping[str, Any]] | None = None, interval: float = 1.0):
+        """Start the dashboard and automatic resource sampling for a training block.
+
+        The server and monitor are stopped even if training raises. To display custom
+        training metrics live, pass a zero-argument ``metrics`` callback returning a
+        mapping such as ``{"loss": loss, "accuracy": accuracy}``.
+        """
+        if interval <= 0:
+            raise ValueError("interval must be positive")
+        from remgu.visualization.resource_monitor import ResourceMonitor
+        self._resource_monitor = ResourceMonitor()
+        self._metrics_provider = metrics
+        self._tracking_stop.clear()
+        self.update_state({"status": "running"})
+        self.url = self.start()
+        def sample_loop() -> None:
+            while not self._tracking_stop.wait(interval):
+                values: dict[str, Any] = {"live_resources": self._resource_monitor.sample()}
+                if self._metrics_provider is not None:
+                    try:
+                        metric_values = dict(self._metrics_provider())
+                        values["metrics"] = metric_values
+                        history = dict(self.state.get("metric_history", {}))
+                        for name, value in metric_values.items():
+                            if isinstance(value, (int, float)):
+                                history.setdefault(name, []).append(value)
+                        values["metric_history"] = history
+                        if metric_values:
+                            values["main_metric_value"] = next(reversed(metric_values.values()))
+                    except Exception as exc:
+                        self.publish_event({"type": "log", "message": f"Metrics callback failed: {exc}"})
+                self.update_state(values)
+            if self._resource_monitor is not None:
+                self.update_state({"resource_summary": self._resource_monitor.summary()})
+        self._tracking_thread = threading.Thread(target=sample_loop, name="remgu-resource-monitor", daemon=True)
+        self._tracking_thread.start()
+        try:
+            yield self.url
+        except BaseException:
+            self.update_state({"status": "failed"})
+            raise
+        else:
+            self.update_state({"status": "completed"})
+        finally:
+            self._tracking_stop.set()
+            if self._tracking_thread is not None:
+                self._tracking_thread.join(timeout=max(2.0, interval + 1.0))
+            self.stop()
+
+    def track(self, *, metrics: Callable[[], Mapping[str, Any]] | None = None, interval: float = 1.0):
+        """Decorate a training function so its dashboard starts/stops automatically."""
+        def decorate(function):
+            @wraps(function)
+            def wrapped(*args, **kwargs):
+                with self.run(metrics=metrics, interval=interval):
+                    return function(*args, **kwargs)
+            return wrapped
+        return decorate
+
+    def log_metrics(self, **metrics: Any) -> None:
+        """Publish a small metric snapshot without constructing a full dashboard state."""
+        current = dict(self.state.get("metrics", {}))
+        current.update(metrics)
+        history = dict(self.state.get("metric_history", {}))
+        for name, value in metrics.items():
+            if isinstance(value, (int, float)):
+                history.setdefault(name, []).append(value)
+        self.update_state({"metrics": current, "metric_history": history,
+                           "main_metric_value": next(reversed(metrics.values())) if metrics else self.state.get("main_metric_value")})
 
     def update_state(self, values: dict[str, Any]) -> None:
         """Merge a new state snapshot and publish it to connected browsers."""

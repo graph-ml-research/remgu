@@ -3,7 +3,9 @@
 """Optional conceptual architecture view for Word2Vec-style embedding models."""
 
 
-class Word2VecArchitectureAdapter:
+from remgu.visualization.architecture_adapter import ArchitectureAdapter
+
+class Word2VecArchitectureAdapter(ArchitectureAdapter):
     """Show the embedding lookup flow without pretending Word2Vec is a layer stack."""
 
     def get_architecture_dot(self, model: object) -> str | None:

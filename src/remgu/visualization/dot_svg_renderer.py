@@ -5,7 +5,9 @@ from html import escape
 import re
 
 
-class DotSvgRenderer:
+from remgu.visualization.renderer import Renderer
+
+class DotSvgRenderer(Renderer):
     """Render simple DOT node and edge declarations into a self-contained SVG."""
     _NODE = re.compile(r'(?m)^\s*([A-Za-z0-9_.:-]+)\s*\[(?:label\s*=\s*"([^"]*)")?[^\]]*\]\s*;?\s*$')
     _EDGE = re.compile(r'(?m)^\s*([A-Za-z0-9_.:-]+)\s*(?:->|--)\s*([A-Za-z0-9_.:-]+)(?:\s*\[[^\]]*\])?\s*;?\s*$')

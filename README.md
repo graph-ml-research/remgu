@@ -165,6 +165,34 @@ See the [API guide](docs/en/python-api.md) for signatures and complete examples.
 - **Execution and review are separate.** A successful process is not the same thing as a scientifically reviewed result.
 - **Research analysis is read-only.** `research check`, `research update`, `research archive`, `research export markdown`, and `research export site` do not rewrite the `.research` source data.
 
+
+## Simulation, reports, and dashboard
+
+Use these tools when you want to test a research hypothesis, save a result, inspect examples, or watch training in a browser. Start with the scenario that matches your goal:
+
+- **Run a reproducible graph experiment:** `research simulation run --seed 7 --nodes-per-community 8 --output result.json`
+- **Open a report:** `research simulation report result.json --output report.html` — creates a standalone HTML file.
+- **Watch a saved result:** `research simulation dashboard result.json --port 8765` — then open the printed local URL. This shows the result already saved in `result.json`; it does not attach to a training process.
+- **Watch training while it runs:** use `DashboardServer` with `with dashboard.run():` or `@dashboard.track()`. Resource sampling and server cleanup happen automatically. To show live loss/accuracy, pass a small metrics callback or call `dashboard.log_metrics(loss=..., accuracy=...)` after each epoch.
+
+A live dashboard shows metric history, available CPU/RAM/GPU measurements, selected examples, graph/model previews, logs, and any controls explicitly configured by the experiment. A slider is shown only for a parameter that the training code has registered as changeable during training.
+
+```python
+from remgu import DashboardServer
+
+dashboard = DashboardServer()
+
+@dashboard.track()
+def train():
+    for epoch in range(num_epochs):
+        train_one_epoch()
+        dashboard.log_metrics(loss=loss, accuracy=validation_accuracy)
+
+train()  # opens the dashboard while training and closes it afterwards
+```
+
+For CPU/RAM/GPU monitoring, install the optional dependencies with `pip install "remgu[monitor]"`. Metrics unavailable on the current machine are shown as unavailable, not as zero. The dashboard runs locally by default. See the [simulation and visualization guide](docs/en/simulation.md) for complete examples and interpretation notes.
+
 ## Documentation
 
 - [CLI workflows](docs/en/cli.md)
@@ -181,22 +209,10 @@ See the [API guide](docs/en/python-api.md) for signatures and complete examples.
 
 ## Development status
 
-ReMgu is an evolving research tool. The current implementation is intentionally file-based and small. The dependency-free simulation package supports a basic graph-dependency scenario, graph interventions, reproducible transforms, and optional diagnostic contracts. Browser visualization, offline HTML reports, SSE live dashboard, bounded example selection, resource monitoring extras, and optional framework architecture adapters are available. The DOT renderer intentionally supports a safe subset of Graphviz.
+ReMgu is an evolving research tool. The current implementation is intentionally file-based and small. The dependency-free simulation package supports a basic graph-dependency scenario, graph interventions, reproducible transforms, and optional diagnostic contracts. Browser visualization, standalone HTML reports, a live dashboard, selected examples, optional resource monitoring, and framework-specific model previews are available. The DOT renderer intentionally supports a safe subset of Graphviz.
 
 ## Attribution and license
 
 Copyright 2026 Mstislav Maslennikov. Developed and maintained by Mstislav Maslennikov. Licensed under [Apache License 2.0](LICENSE).
 
 Originally developed to support research work of students at the Open Information Technologies Laboratory, Faculty of Computational Mathematics and Cybernetics, Lomonosov Moscow State University. It is maintained as an independent research software project.
-
-## Simulation, reports, and dashboard
-
-The simulator can be used from Python or from the `research` command. The report is a standalone HTML file; the live dashboard is a local-only server.
-
-```bash
-research simulation run --seed 7 --nodes-per-community 8 --output run.json
-research simulation report run.json --output report.html
-research simulation dashboard run.json --port 8765
-```
-
-Python API: `from remgu import SimulationExperiment, SimulationConfig, StaticHtmlReport, DashboardServer`. The CLI dashboard displays a saved result; for live training, publish metrics from the training loop through `DashboardServer.update_state()` and diagnostics through `publish_event()`. Install resource extras with `pip install "remgu[monitor]"`. Architecture detection only inspects frameworks already loaded in `sys.modules`; unsupported models return `None`. See [simulation and visualization guide](docs/en/simulation.md).

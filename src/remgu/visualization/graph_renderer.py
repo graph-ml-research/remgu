@@ -6,8 +6,14 @@ import math
 from remgu.simulation.graph_world import GraphWorld
 
 
-class GraphRenderer:
+from remgu.visualization.renderer import Renderer
+
+class GraphRenderer(Renderer):
     """Provide compact dependency-free graph representations."""
+
+    def render(self, data: GraphWorld, **options: object) -> str:
+        """Render a graph as SVG; use ``to_dot`` for DOT source."""
+        return self.to_svg(data, **options)
 
     def to_dot(self, world: GraphWorld, *, max_nodes: int = 500) -> str:
         """Return a Graphviz DOT string for a bounded subgraph."""

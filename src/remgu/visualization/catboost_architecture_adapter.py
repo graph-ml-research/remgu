@@ -3,7 +3,9 @@
 """Optional compact ensemble summary for CatBoost-like models."""
 
 
-class CatBoostArchitectureAdapter:
+from remgu.visualization.architecture_adapter import ArchitectureAdapter
+
+class CatBoostArchitectureAdapter(ArchitectureAdapter):
     """Represent an ensemble as a bounded set of tree nodes, not individual split graphs."""
 
     def __init__(self, max_trees: int = 40) -> None:

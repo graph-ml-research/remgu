@@ -34,16 +34,21 @@ class ArchitectureAdapter:
                 if result is None:
                     return None
 
-            torch = sys.modules.get("torch")
-            if torch is not None:
-                nn = getattr(torch, "nn", None) or sys.modules.get("torch.nn")
-                module_type = getattr(nn, "Module", None)
-                if isinstance(module_type, type) and isinstance(model, module_type):
-                    from remgu.visualization.torch_architecture_adapter import TorchArchitectureAdapter
-                    result = TorchArchitectureAdapter().get_architecture_dot(model)
-                    if result:
-                        return result
-
+            # Specific adapters share this base class; each uses duck typing and
+            # only inspects metadata already available on the supplied object.
+            from remgu.visualization.catboost_architecture_adapter import CatBoostArchitectureAdapter
+            from remgu.visualization.keras_architecture_adapter import KerasArchitectureAdapter
+            from remgu.visualization.spacy_architecture_adapter import SpacyPipelineArchitectureAdapter
+            from remgu.visualization.torch_architecture_adapter import TorchArchitectureAdapter
+            from remgu.visualization.word2vec_architecture_adapter import Word2VecArchitectureAdapter
+            for adapter in (TorchArchitectureAdapter(), KerasArchitectureAdapter(),
+                            CatBoostArchitectureAdapter(), SpacyPipelineArchitectureAdapter(),
+                            Word2VecArchitectureAdapter()):
+                if type(self) is not ArchitectureAdapter and isinstance(adapter, type(self)):
+                    continue
+                result = adapter.get_architecture_dot(model)
+                if isinstance(result, str) and result.strip():
+                    return result
             tensorflow = sys.modules.get("tensorflow")
             if tensorflow is not None:
                 keras = getattr(tensorflow, "keras", None)

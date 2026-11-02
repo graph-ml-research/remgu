@@ -7,7 +7,9 @@ from itertools import islice
 from typing import Any
 
 
-class TableRenderer:
+from remgu.visualization.renderer import Renderer
+
+class TableRenderer(Renderer):
     """Render mappings or sequences as an HTML table with escaped cells."""
 
     def render(self, rows: Iterable[Mapping[str, Any] | Iterable[Any]], columns: Iterable[str] | None = None,

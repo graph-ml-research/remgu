@@ -4,7 +4,9 @@
 from html import escape
 
 
-class TorchArchitectureAdapter:
+from remgu.visualization.architecture_adapter import ArchitectureAdapter
+
+class TorchArchitectureAdapter(ArchitectureAdapter):
     """Build a DOT module hierarchy without importing PyTorch as a dependency."""
 
     def get_architecture_dot(self, model: object) -> str | None:
