@@ -35,6 +35,9 @@ jobs:
           text = text.replace('[English](./README.md)', '[English](../)')
           p.write_text(text, encoding='utf-8')
           "
+          # Copy the "examples" folder to docs
+          mkdir -p docs/examples
+          cp -r examples/* docs/examples/
           
       - name: Setup Pages
         uses: actions/configure-pages@v5
