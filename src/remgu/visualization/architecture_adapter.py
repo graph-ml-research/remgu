@@ -8,18 +8,24 @@ from typing import Any
 
 
 class ModelAdapter:
-    """Optional model-adapter contract for architecture visualization."""
+    """Common contract for objects that can describe their model architecture.
 
-    def get_architecture_dot(self) -> str | None:
-        """Return a Graphviz DOT architecture or ``None`` when unsupported."""
+    A model can implement ``get_architecture_dot()`` without depending on ReMgu's
+    framework-specific adapters. ``ArchitectureAdapter`` uses the same contract
+    while discovering a representation for an arbitrary model object.
+    """
+
+    def get_architecture_dot(self, model: object | None = None) -> str | None:
+        """Return an optional Graphviz DOT description, or ``None`` if unavailable."""
+        del model
         return None
 
 
-class ArchitectureAdapter:
-    """Resolve a model's DOT description using its contract or loaded framework adapters.
+class ArchitectureAdapter(ModelAdapter):
+    """Discover an architecture description from a model or loaded framework.
 
-    Frameworks are detected only through ``sys.modules``: introspection never imports a
-    potentially large ML framework just to draw a diagram. All adapter failures degrade
+    Frameworks are detected only through ``sys.modules``: introspection never imports
+    a potentially large ML framework just to draw a diagram. All adapter failures degrade
     to ``None`` because architecture visualization is optional.
     """
 
