@@ -6,8 +6,10 @@ from __future__ import annotations
 from collections import deque
 from typing import Iterable, Mapping
 
+from remgu.simulation.simulation_world import SimulationWorld
 
-class GraphWorld:
+
+class GraphWorld(SimulationWorld):
     """Represent an undirected graph, node features and community assignments."""
 
     def __init__(self, adjacency: Mapping[int, Iterable[int]],
@@ -79,7 +81,7 @@ class GraphWorld:
         """Return an independent copy of the graph world."""
         return GraphWorld(self.adjacency, self.features, self.communities, self.critical_bridge)
 
-    def to_ascii(self, max_nodes: int = 30) -> str:
+    def to_text(self, max_nodes: int = 30) -> str:
         """Return a compact terminal representation of nodes and edges.
 
         Args:
@@ -101,6 +103,15 @@ class GraphWorld:
         if len(selected_edges) < len(self.edges):
             lines.append(f"  ... {len(self.edges) - len(selected_edges)} edge(s) omitted")
         return "\n".join(lines)
+
+    def to_ascii(self, max_nodes: int = 30) -> str:
+        """Backward-compatible alias for :meth:`to_text`."""
+        return self.to_text(max_nodes=max_nodes)
+
+    def summary(self) -> str:
+        """Return a compact description shared by generic world viewers."""
+        communities = len(set(self.communities.values()))
+        return f"GraphWorld: {len(self.node_ids)} nodes, {len(self.edges)} edges, {communities} communities"
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-compatible representation of the graph world."""

@@ -28,6 +28,7 @@ from remgu.simulation import (
     GraphReachabilityBaseline,
     GraphWorld,
     GraphWorldGenerator,
+    SimulationWorld,
     PredictionAccuracyCheck,
     RandomSource,
     RemoveEdgeOperator,
@@ -46,7 +47,7 @@ from remgu.simulation import (
 
 __all__ += [
     "AddIsolatedNodesOperator", "CriticalBridgeCheck", "GraphDependencyTask", "GraphOperator",
-    "GraphReachabilityBaseline", "GraphWorld", "GraphWorldGenerator", "PredictionAccuracyCheck",
+    "GraphReachabilityBaseline", "GraphWorld", "GraphWorldGenerator", "SimulationWorld", "PredictionAccuracyCheck",
     "RandomSource", "RemoveEdgeOperator", "ResearchRunAdapter", "SimulationCheck", "SimulationConfig",
     "SimulationExperiment", "SimulationResult", "SimulationRunner", "Transform", "NumericNoiseTransform",
     "TransformPipeline", "Probe", "ModelIntervener",
@@ -54,13 +55,13 @@ __all__ += [
 
 from remgu.visualization import (
     ArchitectureAdapter, ModelAdapter, Renderer, DotSvgRenderer, GraphRenderer, ImageRenderer,
-    MetricRenderer, ResourceMonitor, StaticHtmlReport, TableRenderer, TextRenderer,
+    MetricRenderer, ResourceMonitor, StaticHtmlReport, TableRenderer, TextRenderer, WorldRenderer,
 )
 from remgu.dashboard import DashboardServer, ExperimentController
 
 __all__ += [
     "ArchitectureAdapter", "ModelAdapter", "Renderer", "DotSvgRenderer", "GraphRenderer", "ImageRenderer",
-    "MetricRenderer", "ResourceMonitor", "StaticHtmlReport", "TableRenderer", "TextRenderer",
+    "MetricRenderer", "ResourceMonitor", "StaticHtmlReport", "TableRenderer", "TextRenderer", "WorldRenderer",
     "DashboardServer", "ExperimentController",
 ]
 from remgu.example import ExampleSelectionService, ExampleReportSelector, SyntheticExampleGenerator

@@ -7,6 +7,7 @@ from remgu.simulation.graph_operator import GraphOperator
 from remgu.simulation.remove_edge_operator import RemoveEdgeOperator
 from remgu.simulation.add_isolated_nodes_operator import AddIsolatedNodesOperator
 from remgu.simulation.graph_world import GraphWorld
+from remgu.simulation.simulation_world import SimulationWorld
 from remgu.simulation.graph_world_generator import GraphWorldGenerator
 from remgu.simulation.random_source import RandomSource
 from remgu.simulation.research_run_adapter import ResearchRunAdapter
@@ -24,6 +25,6 @@ from remgu.simulation.probe import Probe
 from remgu.simulation.model_intervener import ModelIntervener
 
 __all__ = ["AddIsolatedNodesOperator", "CriticalBridgeCheck", "GraphDependencyTask", "GraphOperator",
-           "GraphReachabilityBaseline", "GraphWorld", "GraphWorldGenerator", "PredictionAccuracyCheck",
+           "GraphReachabilityBaseline", "GraphWorld", "GraphWorldGenerator", "SimulationWorld", "PredictionAccuracyCheck",
            "RandomSource", "RemoveEdgeOperator", "ResearchRunAdapter", "SimulationCheck", "SimulationConfig",
            "SimulationExperiment", "SimulationResult", "SimulationRunner", "Transform", "NumericNoiseTransform", "TransformPipeline", "Probe", "ModelIntervener"]
