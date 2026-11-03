@@ -24,6 +24,24 @@ ReMgu connects a research hypothesis to a concrete run, its metrics and diagnost
 | Run a controlled graph-dependency simulation and generate a report | CLI / Python API | [Simulation API](docs/en/simulation.md) |
 | Understand the files ReMgu creates | Reference | [On-disk format](docs/en/data-format.md) |
 
+## Choose your path
+
+ReMgu has two independent workflows. You can use the research tracker without running any simulator:
+
+```text
+Real experiment (your data and training code)
+Experiment + Run  →  .research/  →  review and share results
+
+Optional synthetic sandbox (controlled test worlds)
+SimulationExperiment + operators  →  result.json  →  HTML report
+```
+
+- **New to ReMgu?** Start with [Quick start](#quick-start), then run the [hello example](examples/hello_remgu.py).
+- **Want to test a controlled hypothesis?** Read [Simulation](docs/en/simulation.md).
+- **Want to see graphs and examples in a browser?** Read [Reports and dashboard](#simulation-reports-and-dashboard).
+
+The simulator is optional. You can use `Experiment` and `Run` for real data, text, images, tables, or any other ML task; ReMgu does not require a graph world.
+
 ## The research loop
 
 ```text
@@ -156,6 +174,25 @@ from remgu import SimulationExperiment, SimulationConfig, RemoveEdgeOperator
 - `SimulationExperiment` runs a controlled synthetic experiment; `SimulationConfig` fixes its settings and seed, while graph operators make explicit interventions.
 
 See the [API guide](docs/en/python-api.md) for signatures and complete examples.
+
+## First successful run
+
+If you want to see what ReMgu does before adapting your own training script, run this example from the repository root:
+
+```bash
+python examples/hello_remgu.py
+```
+
+It simulates five training steps and creates a run under `.research/`. Open the printed run directory: `run.yaml` describes the hypothesis and status, `params.yaml` stores the settings, `metrics.csv` contains the loss history, and `samples.jsonl` stores optional diagnostic examples. These are ordinary text files; you can inspect them in an editor or open `metrics.csv` in a spreadsheet. The example does not train a real model.
+
+### Tiny glossary
+
+- **Hypothesis:** the claim you want to test.
+- **Metric:** a number used to describe a result, such as loss or accuracy.
+- **Baseline:** a simple reference method that tells you whether a more complex method helps.
+- **Seed:** a number used to make random choices repeatable between runs.
+- **Invariant:** a property expected to stay true after a controlled change, such as predictions not changing when irrelevant nodes are added.
+- **Augmentation:** a controlled change or addition to training examples.
 
 ## Design principles
 

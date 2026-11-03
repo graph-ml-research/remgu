@@ -220,3 +220,7 @@ site_path = StaticSiteAdapter().export(snapshot, "site")
 ```
 
 `StaticSiteAdapter` accepts only a `ResearchSnapshot`; it never reads `.research` or accesses `Run` objects. It writes a static site without JavaScript or a backend and refuses to overwrite an existing destination directory.
+
+## What ReMgu saves
+
+A run is stored as ordinary files in `.research/<run-id>/`: `run.yaml` records the hypothesis, motivation, status and review; `params.yaml` stores parameters; `metrics.csv` stores metric values by step; `samples.jsonl` stores compact diagnostic records. You can inspect these files directly, and you can open `metrics.csv` in a spreadsheet. To try the workflow without a real model, run `python examples/hello_remgu.py` from the repository root.

@@ -45,6 +45,8 @@ The generator keeps each community internally connected with a chain, samples ad
 
 With the stated seed, the source feature is positive. The baseline can reach the source from all target nodes and achieves accuracy 1.0. After removing edge `(4, 5)`, the targets cannot reach the source, so the dependency baseline predicts its configured default and accuracy drops to 0.0. The critical-bridge check reports that the endpoints are disconnected.
 
+`CriticalBridgeCheck` checks graph connectivity only: it reports whether the designated bridge endpoints are still connected. It does not itself measure accuracy or prove that a trained model is not using shortcuts. `PredictionAccuracyCheck` reports prediction accuracy separately. To test for shortcut features, design an additional check that compares model behaviour before and after the intervention.
+
 The exact numbers depend on the seed and configuration. Reuse the same configuration and seed for a controlled comparison; otherwise graph and feature changes can confound the intervention.
 
 ### Operators and data transforms
@@ -172,3 +174,7 @@ if dot is not None:
 ```
 
 If a model is unsupported or does not expose enough metadata, the result is `None`. Adapters for PyTorch, Keras, CatBoost, spaCy, and Word2Vec use metadata already available on the object; they do not install or automatically import heavyweight ML frameworks. The diagram is an overview, not a guarantee that every internal computation is represented.
+
+## World types and renderers
+
+`GraphWorld` is the first implemented simulation world, not a requirement for ordinary ReMgu experiments. It implements the shared `SimulationWorld` contract: validation, independent copying, a JSON-compatible representation, a short summary, and a readable text view. `WorldRenderer` can display any world implementing that contract; `GraphRenderer` adds graph-specific SVG and DOT views. A future text world or synthetic user-history world can implement the same shared methods and add its own specialised renderer and operators. The current `SimulationRunner` and graph operators remain graph-specific.
