@@ -36,7 +36,7 @@ Optional synthetic sandbox (controlled test worlds)
 SimulationExperiment + operators  →  result.json  →  HTML report
 ```
 
-- **New to ReMgu?** Start with [Quick start](#quick-start), then run the [hello](examples/hello_remgu.py) example.
+- **New to ReMgu?** Start with [Quick start](#quick-start), then run the [hello_remgu.py](examples/hello_remgu.py) example.
 - **Want to test a controlled hypothesis?** Read [Simulation](docs/en/simulation.md).
 - **Want to see graphs and examples in a browser?** Read [Reports and dashboard](#simulation-reports-and-dashboard).
 
