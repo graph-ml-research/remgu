@@ -25,6 +25,9 @@ jobs:
           sed -e 's|](docs/ru/|](|g' \
               -e 's|](\([a-zA-Z0-9_-]*\.md\)|](\./\1|g' README.ru.md > docs/ru/index.md
               
+          # fix references to python scripts in 'examples'
+          sed -i 's|](examples/|](../examples/|g' docs/ru/index.md    
+              
           # Fix language switcher in Russian README using Python
           # This reliably replaces the exact string and avoids sed escaping issues
           python -c "
